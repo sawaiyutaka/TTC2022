@@ -67,7 +67,7 @@ Y = df['PLE_sum']
 print("Y\n", df["PLE_sum"].describe())
 T = df['OCS_0or1']  # 強迫5点以上をtreatmentとする
 
-
+'''
 X_NaN = df.drop(["PLE_sum", "OCS_0or1", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"], axis=1)
 
 # Make an instance and perform the imputation
@@ -85,17 +85,16 @@ X = df.filter(regex='^(A)', axis=1)
 print(X)
 X = X.drop(["AB71", "AB87", "AB88", "AB104", "AB114", "AB126", "AB127", "AB145"], axis=1)
 X = X.drop(["AD57", "AD58", "AD59", "AD60", "AD61", "AD62"], axis=1)
-# X.to_csv("TTC2022_X_dummy.csv")
+X.to_csv("TTC2022_X_dummy.csv")
 # X = df.drop(["SAMPLENUMBER", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1", 'PLE_sum', "OCS_0or1", "OCS_sum", axis=1)
 
 # AB基本セットのみ使用する場合
 # X_col_use = pd.read_table("TTC2022_base_minimum.csv", delimiter=",")
 # X = df[X_col_use.columns.values]  
-
+'''
 
 # 第1期の強迫、PLEを除外したXを読み込み
-# X = pd.read_table("TTC2022_X_dummy.csv", delimiter=",")
-X = X.drop(["Unnamed: 0"], axis=1)
+X = pd.read_table("TTC2022_X_dummy.csv", delimiter=",")
 print("X:\n", X.head(10))
 
 # print("補完後のNaN個数\n", PLE_imputed.isnull().sum())
@@ -134,10 +133,10 @@ causal_forest = CausalForestDML(criterion='het',
                                 model_y=LassoCV(),
                                 )
 
-
 # fit train data to causal forest model
 causal_forest.fit(Y, T, X=X, W=W)
-# # estimate the CATE with the test set
+
+# estimate the CATE with the test set
 causal_forest.const_marginal_ate(X_train)
 
 """
@@ -194,8 +193,8 @@ print("df_lower\n", df_lower.describe())
 # df_lower.to_csv("TTC2022_lower.csv")
 
 # CATE(全体)
-p = s.displot(te_pred)
-# p.set_title("CATE, whole")
+s.set()
+s.displot(te_pred)
 plt.show()
 
 """
@@ -210,7 +209,7 @@ s.displot(te_pred_test2)
 plt.show()
 """
 
-"""
+'''
 # https://towardsdatascience.com/causal-machine-learning-for-econometrics-causal-forests-5ab3aec825a7
 # ★['Y0']['T0']問題！
 # fit causal forest with default parameters
@@ -220,32 +219,11 @@ causal_forest.fit(Y, T, X=X, W=W)
 # calculate shap values of causal forest model
 shap_values = causal_forest.shap_values(X)
 # plot shap values
-shap.summary_plot(shap_values['Y0']['T0'])
-"""
+# shap.summary_plot(shap_values['Y0']['T0'])
+# shap.summary_plot(shap_values, X)ではダメ
+'''
 
-
-"""
-# ハイパーパラメータをチューニング
-search_params = {
-    'n_estimators': [100, 1000, 1500],
-    'max_features': [i for i in range(1, X_train.shape[1])],
-    'min_samples_split': [5, 20, 40],
-    'max_depth': [30, 40, 60],
-    'n_jobs': [1],
-    'random_state': [42],
-}
-
-gsr = GridSearchCV(
-    RandomForestRegressor(),
-    search_params,
-    cv=3,
-    n_jobs=-1,
-    verbose=True
-)
-
-gsr.fit(X_train, Y_train)
-
-# 最もよかったモデル
-print(gsr.best_estimator_)
-print("最もよかったモデルの評価", gsr.best_estimator_.score(X_val, Y_val))  # 0.039161963203564465
-"""
+# Note that the structure of this estimator is based on the BaseEstimator and RegressorMixin from sklearn; however,
+# here we predict treatment effects –which are unobservable– hence regular model validation and model selection
+# techniques (e.g. cross validation grid search) do not work as we can never estimate a loss on a training sample,
+# thus a tighter integration into the sklearn workflow is unlikely for now.
