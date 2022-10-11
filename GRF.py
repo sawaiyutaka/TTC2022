@@ -67,7 +67,7 @@ Y = df['PLE_sum']
 print("Y\n", df["PLE_sum"].describe())
 T = df['OCS_0or1']  # 強迫5点以上をtreatmentとする
 
-"""
+
 X_NaN = df.drop(["PLE_sum", "OCS_0or1", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"], axis=1)
 
 # Make an instance and perform the imputation
@@ -76,10 +76,10 @@ X_imputed = imputer.fit_transform(X_NaN)
 print("X_imputed\n", X_imputed)
 X_NaN[X_NaN.columns.values] = X_imputed
 X_NaN.to_csv("TTC2022_X_imputed_ple_naive.csv")
-"""
+
 # X_NaN = pd.read_table("TTC2022_X_imputed_ple_naive.csv", delimiter=",")
 
-"""
+
 # 第1期の強迫、PLEを除外
 X = df.filter(regex='^(A)', axis=1)
 print(X)
@@ -91,10 +91,10 @@ X = X.drop(["AD57", "AD58", "AD59", "AD60", "AD61", "AD62"], axis=1)
 # AB基本セットのみ使用する場合
 # X_col_use = pd.read_table("TTC2022_base_minimum.csv", delimiter=",")
 # X = df[X_col_use.columns.values]  
-"""
+
 
 # 第1期の強迫、PLEを除外したXを読み込み
-X = pd.read_table("TTC2022_X_dummy.csv", delimiter=",")
+# X = pd.read_table("TTC2022_X_dummy.csv", delimiter=",")
 X = X.drop(["Unnamed: 0"], axis=1)
 print("X:\n", X.head(10))
 
