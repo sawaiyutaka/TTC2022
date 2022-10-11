@@ -163,8 +163,8 @@ print("X_test2: \n", X_test2)
 te_pred = causal_forest.effect(X)
 
 # X_testのみでCATEを計算
-# te_pred_test1 = causal_forest.effect(X_test1)
-# te_pred_test2 = causal_forest.effect(X_test2)
+te_pred_test1 = causal_forest.effect(X_test1)
+te_pred_test2 = causal_forest.effect(X_test2)
 
 print("te_pred: \n", te_pred)
 print("要素数", len(te_pred))
@@ -197,7 +197,7 @@ s.set()
 s.displot(te_pred)
 plt.show()
 
-"""
+
 # CATE(前半)
 s.displot(te_pred_test1)
 # p.set_title("CATE, 1-half")
@@ -207,7 +207,7 @@ plt.show()
 s.displot(te_pred_test2)
 # p.set_title("CATE, 2-half")
 plt.show()
-"""
+
 
 '''
 # https://towardsdatascience.com/causal-machine-learning-for-econometrics-causal-forests-5ab3aec825a7
