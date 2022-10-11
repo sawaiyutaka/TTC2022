@@ -200,12 +200,10 @@ plt.show()
 
 # CATE(前半)
 s.displot(te_pred_test1)
-# p.set_title("CATE, 1-half")
 plt.show()
 
 # CATE(後半)
 s.displot(te_pred_test2)
-# p.set_title("CATE, 2-half")
 plt.show()
 
 
