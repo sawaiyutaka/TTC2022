@@ -15,7 +15,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 # with codecs.open("gender_gap_full.csv", "r", "Shift-JIS", "ignore") as file:
 #    df = pd.read_table(file, delimiter=",")
 
-df = pd.read_csv("/Volumes/Pegasus32 R8/TTC/2022csv", delimiter=",")
+df = pd.read_csv("//Volumes/Pegasus32R8/TTC/2022csv/TTC2022_CATE_shap.csv", delimiter=",")
 print(df.head(10))
 
 shap.initjs()  # いくつかの可視化で必要
@@ -33,11 +33,11 @@ Y_train, Y_val, X_train, X_val = train_test_split(y, X, test_size=.2)
 # sklearnの機械学習モデル（ランダムフォレスト）のインスタンスを作成する
 # 教師データと教師ラベルを使い、fitメソッドでモデルを学習
 model = RandomForestRegressor(
-    max_depth=20,
-    max_features=24,
-    min_samples_split=20,
-    n_estimators=300,
-    n_jobs=-1,
+    max_depth=30,
+    max_features=25,
+    min_samples_split=5,
+    n_estimators=500,
+    n_jobs=1,
     random_state=2525)
 
 model.fit(X_train, Y_train)
@@ -54,6 +54,8 @@ shap_values = explainer(X_val)
 
 shap.plots.bar(shap_values, max_display=20)
 shap.plots.beeswarm(shap_values, max_display=20)
+
+"""
 # ハイパーパラメータをチューニング
 search_params = {
     'n_estimators': [300, 500, 1000, 10000],
@@ -77,6 +79,7 @@ gsr.fit(X_train, Y_train)
 # 最もよかったモデル
 print(gsr.best_estimator_)
 print("最もよかったモデルの評価", gsr.best_estimator_.score(X_val, Y_val))
+"""
 
 """
 print("非労働人口のshap: ", shap_values[:, "非労働力人口【人】"].abs.mean(0).values)
