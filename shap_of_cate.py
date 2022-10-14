@@ -15,7 +15,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 # with codecs.open("gender_gap_full.csv", "r", "Shift-JIS", "ignore") as file:
 #    df = pd.read_table(file, delimiter=",")
 
-df = pd.read_csv("TTC2022_CATE_shap.csv", delimiter=",")
+df = pd.read_csv("/Volumes/Pegasus32 R8/TTC/2022csv", delimiter=",")
 print(df.head(10))
 
 shap.initjs()  # いくつかの可視化で必要
