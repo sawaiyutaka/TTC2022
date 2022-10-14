@@ -56,7 +56,7 @@ print("AQ合計点を追加した\n", df.head(23))
 """
 
 # impute後、AQとPLE合計点を計算後
-df = pd.read_table("TTC2022_PLE_sum.csv", delimiter=",")
+df = pd.read_table("/Volumes/Pegasus32 R8/TTC/2022csv/TTC2022_PLE_sum.csv", delimiter=",")
 
 # 特徴量 X、アウトカム y、割り当て変数 T
 Y = df['PLE_sum']
@@ -94,7 +94,7 @@ X.to_csv("TTC2022_X_dummy.csv")
 '''
 
 # 第1期の強迫、PLEを除外したXを読み込み
-X = pd.read_table("TTC2022_X_dummy.csv", delimiter=",")
+X = pd.read_table("/Volumes/Pegasus32 R8/TTC/2022csv/TTC2022_X_dummy.csv", delimiter=",")
 print("X:\n", X.head(10))
 
 # print("補完後のNaN個数\n", PLE_imputed.isnull().sum())
