@@ -1,12 +1,14 @@
 import pandas as pd
 
+OCS_CUT_OFF = 12  # 強迫のCBCLカットライン。（-8点）以下は強迫なしとする。
+
 # 現在の最大表示列数の出力
 # pd.get_option("display.max_columns")
 
 # 最大表示列数の指定（ここでは50列を指定）
 # pd.set_option('display.max_columns', 300)
-
-df = pd.read_table("TTC2022_base_minimum.csv", delimiter=",")
+"""
+df = pd.read_table("TTC2022_base_minimum.csv", delimiter=",")  # このファイルをiMacでも使えるように★
 print(df.describe())
 print(df.head(30))
 df = df.set_index("SAMPLENUMBER")
@@ -34,7 +36,8 @@ print("NaN個数\n", df_OCS.isnull().sum())
 df_OCS = df_OCS.dropna(how='any')  # NaNを削除
 df_OCS["OCS_sum"] = df_OCS.sum(axis=1)  # , skipna=False)
 print("OCS合計点\n", df_OCS)
-OCS_CUT_OFF = 12  # -8点がスコア
+
+
 df_OCS_pos = (df_OCS["OCS_sum"] > OCS_CUT_OFF)  # 5点以上だと115人
 print("df_OCS_pos\n", df_OCS_pos)
 print("強迫症状カットオフ以上\n", df_OCS_pos.sum())
@@ -62,7 +65,14 @@ print("NaN個数\n", df_grf.isnull().sum())
 # s.to_csv("TTC2022_grf_min_NaN.csv")
 
 # ★他の項目が手に入ったら、ここでdf_grfにマージする！！！★
+"""
+all_1st = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv/TTC2022_1st_all.csv", delimiter=",")
+print(all_1st)
 
+print("ple_naiveの中のNaN個数\n", all_1st.isnull().sum())
+s = all_1st.isnull().sum()
+# s.to_csv("NaN_in_all_1st.csv")
+"""
 # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
 # 1期でPLEなし
 df_pre_imputed = pd.read_table("TTC2022_ple_naive.csv", delimiter=",")
@@ -75,3 +85,4 @@ print(df_pre_imputed.head())
 print("ple_naiveの中のNaN個数\n", df_pre_imputed.isnull().sum())
 s = df_pre_imputed.isnull().sum()
 # s.to_csv("NaN_in_ple_naive.csv")
+"""
