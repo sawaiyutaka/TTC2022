@@ -1,4 +1,6 @@
 import pandas as pd
+import seaborn as s
+from matplotlib import pyplot as plt
 
 OCS_CUT_OFF = 12  # 強迫のCBCLカットライン。（-8点）以下は強迫なしとする。
 
@@ -70,8 +72,22 @@ all_1st = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv/TTC2022_1st_all.csv", 
 print(all_1st)
 
 print("ple_naiveの中のNaN個数\n", all_1st.isnull().sum())
-s = all_1st.isnull().sum()
-# s.to_csv("NaN_in_all_1st.csv")
+sr = all_1st.isnull().sum()
+# sr.to_csv("NaN_in_all_1st.csv")
+
+s.displot(sr)
+plt.show()
+
+# １期の量的データは全部で1477項目
+sr = sr[sr < 200]  # 200人以上だと586項目, 150人以上だと622項目, 100人以上だと718項目
+# sr = sr[sr > 250]  # 576
+# sr = sr[sr > 500]  # 528
+print(sr)
+print(sr.index)  # NaNが●以上の項目名を抽出★
+
+name_columns = pd.DataFrame(sr, columns=["num_of_NaN"])
+print(name_columns)
+
 """
 # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
 # 1期でPLEなし
