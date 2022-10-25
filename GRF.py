@@ -11,24 +11,9 @@ from missingpy import MissForest
 from econml.dml import CausalForestDML
 import shap
 
-# df = pd.read_table("TTC2022_ple_naive.csv", delimiter=",")
-# df = df.drop(["Unnamed: 0"], axis=1)
-# print(df.head())
 
-"""
-# Make an instance and perform the imputation
-imputer = MissForest()
-df_imputed = imputer.fit_transform(df)
-print("df_imputed\n", df_imputed)
-df[df.columns.values] = df_imputed
-df = df.round().astype(int)  # 各列を整数に丸める（身長、体重も丸め）
-# df.to_csv("TTC2022_ple_naive_imputed.csv")
-print(df)
-"""
-
-"""
 # imputeした後のデータフレーム、PLEとAQの合計得点前
-df = pd.read_table("TTC2022_ple_naive_imputed.csv", delimiter=",")
+df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_alldata/base_ple_imputed.csv", delimiter=",")
 print(df.head())
 
 # PLEの合計点を作成
@@ -53,7 +38,7 @@ print("PLE合計点を追加した\n", df.head(15))
 df = pd.merge(df, df_AQ[["SAMPLENUMBER", "AQ_sum"]], on="SAMPLENUMBER")
 print("AQ合計点を追加した\n", df.head(23))
 # df.to_csv("TTC2022_PLE_sum.csv")
-"""
+
 
 # impute後、AQとPLE合計点を計算後
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv/TTC2022_PLE_sum.csv", delimiter=",")
@@ -131,7 +116,7 @@ causal_forest = CausalForestDML(criterion='het',
                                 cv=10,
                                 model_t=LassoCV(),
                                 model_y=LassoCV(),
-                                )
+                                random_state=42)
 
 # fit train data to causal forest model
 causal_forest.fit(Y, T, X=X, W=W)
