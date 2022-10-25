@@ -1,33 +1,25 @@
 import pandas as pd
 import numpy as np
 import seaborn as s
-from sklearn.ensemble import RandomForestRegressor
 import matplotlib.pyplot as plt
-from sklearn.linear_model import MultiTaskLassoCV, LassoCV
-from sklearn.model_selection import train_test_split, GridSearchCV
-
-from missingpy import MissForest
-
+from sklearn.linear_model import LassoCV
+from sklearn.model_selection import train_test_split
 from econml.dml import CausalForestDML
-import shap
-
 
 # imputeした後のデータフレーム、PLEとAQの合計得点前
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_alldata/base_ple_imputed.csv", delimiter=",")
 print(df.head())
 
 # PLEの合計点を作成
-df_Y = df[["SAMPLENUMBER", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"]]
+df_Y = df[["CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"]]
 print("df_Y\n", df_Y)
-# df_Y = df_Y.fillna(1) # NaNは「なかった」とみなす
-df_Y = df_Y.set_index("SAMPLENUMBER")
 df_Y["PLE_sum"] = df_Y.sum(axis=1)
 print("第3回PLE合計\n", df_Y["PLE_sum"])
-df_Y = df_Y.reset_index()
+# df_Y = df_Y.reset_index()
+
 
 # AQの合計点を作成
-df_AQ = df.filter(regex='^(SAMPLENUMBER|BB12|BB13)', axis=1)
-df_AQ = df_AQ.set_index("SAMPLENUMBER")
+df_AQ = df.filter(regex='^(BB12|BB13)', axis=1)
 df_AQ["AQ_sum"] = df_AQ.sum(axis=1)
 print("第2回AQ合計\n", df_AQ["AQ_sum"])
 df_AQ = df_AQ.reset_index()
@@ -40,50 +32,36 @@ print("AQ合計点を追加した\n", df.head(23))
 # df.to_csv("TTC2022_PLE_sum.csv")
 
 
-# impute後、AQとPLE合計点を計算後
-df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv/TTC2022_PLE_sum.csv", delimiter=",")
-
-# 特徴量 X、アウトカム y、割り当て変数 T
-Y = df['PLE_sum']  # 'CD65_1'などとすると、単一項目で見られる
+# 特徴量 X、アウトカム Y、割り当て変数 T
+Y = df_Y['PLE_sum']  # 'CD65_1'などとすると、単一項目で見られる
 
 print("Y\n", df["PLE_sum"].describe())
 T = df['OCS_0or1']  # 強迫5点以上をtreatmentとする
 
-'''
-X_NaN = df.drop(["PLE_sum", "OCS_0or1", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"], axis=1)
+# 第３期のPLEを除外
+X = df.drop(["PLE_sum", "CD57_1", "CD58_1", "CD59_1", "CD60_1",
+             "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"], axis=1)
 
-# Make an instance and perform the imputation
-imputer = MissForest()
-X_imputed = imputer.fit_transform(X_NaN)
-print("X_imputed\n", X_imputed)
-X_NaN[X_NaN.columns.values] = X_imputed
-X_NaN.to_csv("TTC2022_X_imputed_ple_naive.csv")
+# 第２期の強迫を除外
+X = X.drop(["BB39", "BB56", "BB57", "BB73", "BB83", "BB95", "BB96", "BB116", "OCS_sum", "OCS_0or1"])
 
-# X_NaN = pd.read_table("TTC2022_X_imputed_ple_naive.csv", delimiter=",")
+# 第２期のAQを除外
+X = X.filter(regex='~^(BB12|BB13)', axis=1)
 
-
-# 第1期の強迫、PLEを除外
-X = df.filter(regex='^(A)', axis=1)
 print(X)
+# 第1期の強迫を除外
 X = X.drop(["AB71", "AB87", "AB88", "AB104", "AB114", "AB126", "AB127", "AB145"], axis=1)
 X = X.drop(["AD57", "AD58", "AD59", "AD60", "AD61", "AD62"], axis=1)
-X.to_csv("TTC2022_X_dummy.csv")
-# X = df.drop(["SAMPLENUMBER", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1", 'PLE_sum', "OCS_0or1", "OCS_sum", axis=1)
+X.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_alldata/X_imputed.csv")
 
-# AB基本セットのみ使用する場合
-# X_col_use = pd.read_table("TTC2022_base_minimum.csv", delimiter=",")
-# X = df[X_col_use.columns.values]  
-'''
 
 # 第1期の強迫、PLEを除外したXを読み込み
-X = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv/TTC2022_X_dummy.csv", delimiter=",")
+# X = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_alldata/X_imputed.csv", delimiter=",")
 print("X:\n", X.head(10))
-
-# print("補完後のNaN個数\n", PLE_imputed.isnull().sum())
+print("補完後のNaN個数\n", X.isnull().sum())
 
 # https://github.com/microsoft/EconML/blob/main/notebooks/Generalized%20Random%20Forests.ipynb
 # 1. Causal Forest: Heterogeneous causal effects with no unobserved confounders
-
 
 n_samples = len(df)
 n_treatments = 1
@@ -127,12 +105,8 @@ X_test1 = X.iloc[:int(n_samples / 2), :]
 # test2
 X_test2 = X.iloc[int(n_samples / 2):n_samples, :]
 
-# X_test[:, 0] = np.linspace(np.percentile(X[:, 0], 1), np.percentile(X[:, 0], 99), min(100, n_samples))
 print("X_test1: \n", X_test1)
 print("X_test2: \n", X_test2)
-
-# 半分に分割時
-# print("X_test: \n", X_test)
 
 # X全体でCATEを計算
 te_pred = causal_forest.effect(X)
@@ -158,14 +132,14 @@ upper = np.quantile(a=te_pred, q=.9)  # CATE上位10％の境目
 lower = np.quantile(a=te_pred, q=.1)  # CATE下位10％の境目
 df_upper = df_new[(df_new["te_pred"] > upper)]  # CATE上位10%
 df_lower = df_new[(df_new["te_pred"] < lower)]  # CATE下位10%
-print("upeer＝影響を受けやすかった10%: \n", df_upper)
+print("upper＝影響を受けやすかった10%: \n", df_upper)
 print("lower＝影響を受けにくかった10%: \n", df_lower)
 
 print("df_upper\n", df_upper.describe())
-# df_upper.to_csv("TTC2022_upper.csv")
+df_upper.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_alldata/TTC2022_upper.csv")
 
 print("df_lower\n", df_lower.describe())
-# df_lower.to_csv("TTC2022_lower.csv")
+df_lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_alldata/TTC2022_lower.csv")
 
 # CATE(全体)
 s.set()

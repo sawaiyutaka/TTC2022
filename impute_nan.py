@@ -4,9 +4,10 @@ from missingpy import MissForest
 
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_alldata/data4grf.csv", delimiter=",")
 df = df.drop(["Unnamed: 0"], axis=1)
-print(df.head())  # 968 columns
+df = df.set_index("SAMPLENUMBER")
+print(df.head())  # 967 columns
 
-numeric_columns = [colname for colname in df.columns if df[colname].dtype == np.float]  # 数値のみ抽出
+numeric_columns = [colname for colname in df.columns if df[colname].dtype == float]  # 数値のみ抽出
 df = df[numeric_columns]
 print(df.head())  # 945 columns
 

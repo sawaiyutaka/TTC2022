@@ -60,6 +60,10 @@ print("強迫症状カットオフ以上\n", oc_pos.sum())  # 5点以上だと11
 oc_2nd["OCS_0or1"] = (oc_2nd["OCS_sum"] > OCS_CUT_OFF) * 1
 print("OCS_0or1\n", oc_2nd)  # 2733行
 
+# AQ
+aq_2nd = oc_ple.filter(regex='^(BB12|BB13)', axis=1)
+print(aq_2nd)
+
 
 # 第３期PLEのデータフレーム
 ple = oc_ple.filter(like='_1', axis=1)
@@ -93,7 +97,7 @@ print(ple_neg_oc.head())
 
 cols_to_use = df.columns.difference(ple_neg_oc.columns)  # baseにある項目を検出
 print(cols_to_use)
-df4grf = ple_neg_oc.join([df[cols_to_use], ple_3rd], how='inner')
+df4grf = ple_neg_oc.join([df[cols_to_use], aq_2nd, ple_3rd], how='inner')
 print(df4grf)
 df4grf.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_alldata/data4grf.csv")  # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
 
