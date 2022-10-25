@@ -2,73 +2,14 @@ import pandas as pd
 import seaborn as s
 from matplotlib import pyplot as plt
 
-OCS_CUT_OFF = 12  # 強迫のCBCLカットライン。（-8点）以下は強迫なしとする。
 
 # 現在の最大表示列数の出力
 # pd.get_option("display.max_columns")
 
 # 最大表示列数の指定（ここでは50列を指定）
 # pd.set_option('display.max_columns', 300)
-"""
-df = pd.read_table("TTC2022_base_minimum.csv", delimiter=",")  # このファイルをiMacでも使えるように★
-print(df.describe())
-print(df.head(30))
-df = df.set_index("SAMPLENUMBER")
-print(df.head(30))
 
-# 列ごとにNaNをいくつ含むか
-print("NaN個数\n", df.isnull().sum())
-
-# 1回目調査でPLEありの人数
-df_PLE = df[["AD57", "AD58", "AD59", "AD60", "AD61", "AD62", "AD63"]]
-print("df_PLE\n", df_PLE)
-# df_PLE_pos = ((df_PLE == 1.0) | (df_PLE == 2.0))
-df_PLE_pos = (df_PLE == 1.0)
-print("df_PLE_pos\n", df_PLE_pos)  # "Yes, definitely"
-print("1回目調査でPLEが「Yes, definitely」\n", df_PLE_pos.sum())
-
-df_PLE_neg = ((df_PLE == 3.0) | (df_PLE == 2.0))
-print("df_PLE_neg\n", df_PLE_neg)
-print("1回目調査でPLEなし\n", df_PLE_neg.sum())
-
-# 強迫の人数(cut off 5以上)
-df_OCS = df[["BB39", "BB56", "BB57", "BB73", "BB83", "BB95", "BB96", "BB116"]]
-print("df_OCS\n", df_OCS)
-print("NaN個数\n", df_OCS.isnull().sum())
-df_OCS = df_OCS.dropna(how='any')  # NaNを削除
-df_OCS["OCS_sum"] = df_OCS.sum(axis=1)  # , skipna=False)
-print("OCS合計点\n", df_OCS)
-
-
-df_OCS_pos = (df_OCS["OCS_sum"] > OCS_CUT_OFF)  # 5点以上だと115人
-print("df_OCS_pos\n", df_OCS_pos)
-print("強迫症状カットオフ以上\n", df_OCS_pos.sum())
-
-print("df_OCSカットオフ以上以上\n",
-      pd.merge(df_PLE, df_OCS[df_OCS_pos], left_index=True, right_index=True))  # df_OCSで13点以上を抽出
-df0 = pd.merge(df_PLE[df_PLE_neg], df_OCS, left_index=True, right_index=True)  # かつ、PLEなし
-print("PLEなし\n", df0.dropna(how='any'))  # NaNを削除
-df0 = df0.dropna(how='any')
-df1 = pd.merge(df_PLE[df_PLE_neg], df_OCS[df_OCS_pos], left_index=True, right_index=True)  # df_OCS13以上でかつPLEなし
-print("df_OCSカットオフ以上でかつPLEなし\n", df1.dropna(how='any'))  # NaNを削除
-
-# OCS13以上を1、12以下を0にする
-df_OCS["OCS_0or1"] = (df_OCS["OCS_sum"] > OCS_CUT_OFF) * 1
-print(df_OCS)  # 2733行
-
-cols_to_use = df.columns.difference(df0.columns)  # baseにある項目を検出
-df_grf = df0.join([df[cols_to_use], df_OCS["OCS_0or1"]], how='inner')
-print(df_grf)
-# df_grf.to_csv("TTC2022_ple_naive.csv")  # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
-
-print("NaN個数\n", df_grf.isnull().sum())
-# s=df_grf.isnull().sum()
-# print(s.head(264))
-# s.to_csv("TTC2022_grf_min_NaN.csv")
-
-# ★他の項目が手に入ったら、ここでdf_grfにマージする！！！★
-"""
-all_1st = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv/TTC2022_1st_all.csv", delimiter=",")
+all_1st = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv/TTC2022_1st_all.csv", delimiter=",", low_memory=False)
 print(all_1st)
 
 print("ple_naiveの中のNaN個数\n", all_1st.isnull().sum())
@@ -79,11 +20,15 @@ s.displot(sr)
 plt.show()
 
 # １期の量的データは全部で1477項目
-sr = sr[sr < 200]  # 200人以上だと586項目, 150人以上だと622項目, 100人以上だと718項目
+sr = sr[sr < 500]  # 200人以上だと586項目, 150人以上だと622項目, 100人以上だと718項目
 # sr = sr[sr > 250]  # 576
 # sr = sr[sr > 500]  # 528
 print(sr)
 print(sr.index)  # NaNが●以上の項目名を抽出★
+
+df = all_1st[sr.index]
+print("columns under cutoff\n", df)
+# df.to_csv("/Volumes/Pegasus32R8/TTC/2022csv/columns_NAN_under_500.csv")
 
 name_columns = pd.DataFrame(sr, columns=["num_of_NaN"])
 print(name_columns)

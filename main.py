@@ -12,7 +12,7 @@ import codecs
 # pd.set_option('display.max_columns', 50)
 
 
-# 申請したデータ全部（AB基本セットは含めず）
+# 第１期量的データ全部
 
 # プログラム2｜所定フォルダ内の「data*.xlsx」を取得
 files=glob.glob('/Volumes/Pegasus32R8/TTC/2022rawdata/*.xlsx')
@@ -33,48 +33,7 @@ df = pd.concat(list, axis=1, join='inner')
 
 # プログラム6｜エクセルファイルを書き出す
 df.to_csv("/Volumes/Pegasus32R8/TTC/2022csv/TTC2022_1st_all.csv")
-
-
-
-"""
-df_aa = pd.read_excel('/Volumes/Pegasus32R8/TTC/2022rawdata/aa_n4477.xlsx', index_col=0)
-print(df_aa.head(30))
-
-df_ab = pd.read_excel('/Volumes/Pegasus32R8/TTC/2022rawdata/ab_n4477.xlsx', index_col=0)
-print(df_ab.head(30))
-
-df_ac = pd.read_excel('/Volumes/Pegasus32R8/TTC/2022rawdata/ac_n4477.xlsx', index_col=0)
-print(df_ab.head(30))
-
-
-df_ad = pd.read_excel('/Volumes/Pegasus32R8/TTC/2022rawdata/ad_n4470.xls', index_col=0)
-print(df_ad.head(30))
-
-df_ae = pd.read_excel('/Volumes/Pegasus32R8/TTC/2022rawdata/ae_n4478.xls', index_col=0)
-print(df_ae.head(30))
-
-df_bb = pd.read_excel('bb_n3007.xlsx', index_col=0)
-print(df_bb.head(30))
-
-df_bd = pd.read_excel('bd_n3007.xls', index_col=0)
-print(df_bd.head(30))
-
-df_cd = pd.read_excel('cd_n3171.xlsx', index_col=0)
-print(df_cd.head(30))
-
-df_db = pd.read_excel('db_n3171.xlsx', index_col=0)
-print(df_db.head(30))
-
-df_dd = pd.read_excel('dd_n3171.xlsx', index_col=0)
-print(df_dd.head(30))
-
-df = df_aa.join([df_ab, df_ad, df_ae])  # , df_bb, df_bd, df_cd, df_db, df_dd])
-print(df.head(30))
-"""
 # df.to_csv("/Volumes/Pegasus32R8/TTC/2022csv/TTC2022_1st_all.csv")
-
-# df = pd.read_table("TTC2022_full_number_only.csv", delimiter=",")
-# print(df.head())
 
 """
 # 上のCSVから、文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
