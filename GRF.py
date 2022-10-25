@@ -44,10 +44,7 @@ print("AQ合計点を追加した\n", df.head(23))
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv/TTC2022_PLE_sum.csv", delimiter=",")
 
 # 特徴量 X、アウトカム y、割り当て変数 T
-Y = df['PLE_sum']
-
-# 他のPLE項目でどうなるか
-# y = df['CD65_1']
+Y = df['PLE_sum']  # 'CD65_1'などとすると、単一項目で見られる
 
 print("Y\n", df["PLE_sum"].describe())
 T = df['OCS_0or1']  # 強迫5点以上をtreatmentとする
@@ -123,13 +120,6 @@ causal_forest.fit(Y, T, X=X, W=W)
 
 # estimate the CATE with the test set
 causal_forest.const_marginal_ate(X_train)
-
-"""
-# SHAP
-shap_values = est.shap_values(X)
-shap.plots.beeswarm(shap_values['y']['T'])
-plt.show()
-"""
 
 # 半分に分割してテスト
 # test1

@@ -79,7 +79,6 @@ print(df.head())
 # 1回目調査でPLEなしを抽出したい
 df_PLE = df[["AD57", "AD58", "AD59", "AD60", "AD61", "AD62", "AD63"]]
 print("df_PLE\n", df_PLE)
-# df_PLE_pos = ((df_PLE == 1.0) | (df_PLE == 2.0))
 ple_1st_pos = (df_PLE == 1.0)
 print("ple_1st_pos\n", ple_1st_pos)  # "Yes, definitely"
 print("1回目調査でPLEが「Yes, definitely」\n", ple_1st_pos.sum())
@@ -89,7 +88,7 @@ print("ple_1st_neg\n", ple_1st_neg)
 print("1回目調査でPLEなしの人数\n", ple_1st_neg.sum())
 print("1回目調査でPLEなし\n", df_PLE[ple_1st_neg])
 
-ple_neg_oc = pd.merge(df_PLE[ple_1st_neg], oc_2nd, left_index=True, right_index=True)  # PLEなし
+ple_neg_oc = pd.merge(df_PLE[ple_1st_neg], oc_2nd, left_index=True, right_index=True)  # 第１期にpleなしのうち、OCにNaNなし
 print(ple_neg_oc.head())
 
 cols_to_use = df.columns.difference(ple_neg_oc.columns)  # baseにある項目を検出

@@ -33,17 +33,3 @@ print("columns under cutoff\n", df)
 name_columns = pd.DataFrame(sr, columns=["num_of_NaN"])
 print(name_columns)
 
-"""
-# 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
-# 1期でPLEなし
-df_pre_imputed = pd.read_table("TTC2022_ple_naive.csv", delimiter=",")
-print(df_pre_imputed.describe())
-print(df_pre_imputed.head())
-df_pre_imputed = df_pre_imputed.set_index("SAMPLENUMBER")
-print(df_pre_imputed.head())
-
-# 列ごとにNaNをいくつ含むか
-print("ple_naiveの中のNaN個数\n", df_pre_imputed.isnull().sum())
-s = df_pre_imputed.isnull().sum()
-# s.to_csv("NaN_in_ple_naive.csv")
-"""
