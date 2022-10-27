@@ -6,6 +6,7 @@ from sklearn.linear_model import LassoCV
 from sklearn.model_selection import train_test_split
 from econml.dml import CausalForestDML
 
+OCS_CUT_OFF = 12  # 強迫のCBCLカットライン。（-8点）以下は強迫なしとする。
 # imputeした後のデータフレーム、PLEとAQの合計得点前
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_alldata/base_ple_imputed.csv", delimiter=",")
 print(df.head())
@@ -24,29 +25,31 @@ df_AQ["AQ_sum"] = df_AQ.sum(axis=1)
 print("第2回AQ合計\n", df_AQ["AQ_sum"])
 df_AQ = df_AQ.reset_index()
 
-df = pd.merge(df, df_Y[["SAMPLENUMBER", "PLE_sum"]], on="SAMPLENUMBER")
-print("PLE合計点を追加した\n", df.head(15))
+df = pd.concat([df, df_Y], axis=1, join='inner')
+print("PLE合計点を追加した\n", df.head())
 
-df = pd.merge(df, df_AQ[["SAMPLENUMBER", "AQ_sum"]], on="SAMPLENUMBER")
-print("AQ合計点を追加した\n", df.head(23))
+df = pd.concat([df, df_AQ], axis=1, join='inner')
+print("AQ合計点を追加した\n", df.head())
 # df.to_csv("TTC2022_PLE_sum.csv")
 
 
 # 特徴量 X、アウトカム Y、割り当て変数 T
 Y = df_Y['PLE_sum']  # 'CD65_1'などとすると、単一項目で見られる
+print("Y\n", Y)
 
-print("Y\n", df["PLE_sum"].describe())
-T = df['OCS_0or1']  # 強迫5点以上をtreatmentとする
+# imputeで消えたOCS_0or1を戻す
+df["OCS_0or1"] = (df["OCS_sum"] > OCS_CUT_OFF) * 1
+T = df['OCS_0or1']  # 強迫CMCL5点以上であることをtreatmentとする
 
 # 第３期のPLEを除外
 X = df.drop(["PLE_sum", "CD57_1", "CD58_1", "CD59_1", "CD60_1",
              "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"], axis=1)
 
 # 第２期の強迫を除外
-X = X.drop(["BB39", "BB56", "BB57", "BB73", "BB83", "BB95", "BB96", "BB116", "OCS_sum", "OCS_0or1"])
+X = X.drop(["BB39", "BB56", "BB57", "BB73", "BB83", "BB95", "BB96", "BB116", "OCS_sum", "OCS_0or1"], axis=1)
 
 # 第２期のAQを除外
-X = X.filter(regex='~^(BB12|BB13)', axis=1)
+X = X.drop(["BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132", "index"], axis=1)
 
 print(X)
 # 第1期の強迫を除外
@@ -120,7 +123,7 @@ print("要素数", len(te_pred))
 # 各CATEの値のXの要素を示す
 df_new = df.assign(te_pred=te_pred)
 print("CATEを追加\n", df_new)
-# df_new.to_csv("TTC2022_CATE.csv")
+df_new.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_alldata/TTC2022_alldata_CATE.csv")
 
 # CATEの推定結果を確認
 print("CATE of CausalForest: ", round(np.mean(te_pred), 2))

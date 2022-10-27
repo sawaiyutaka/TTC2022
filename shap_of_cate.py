@@ -15,7 +15,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 # with codecs.open("gender_gap_full.csv", "r", "Shift-JIS", "ignore") as file:
 #    df = pd.read_table(file, delimiter=",")
 
-df = pd.read_csv("//Volumes/Pegasus32R8/TTC/2022csv/TTC2022_CATE_shap.csv", delimiter=",")
+df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_alldata/TTC2022_alldata_CATE.csv", delimiter=",")
 print(df.head(10))
 
 shap.initjs()  # いくつかの可視化で必要
@@ -50,7 +50,7 @@ print("model_score: ", model.score(X_val, Y_val))
 # Fits the explainer
 explainer = shap.Explainer(model.predict, X_val)
 # Calculates the SHAP values - It takes some time
-shap_values = explainer(X_val)
+shap_values = explainer(X_val, max_evals=2000)  # max_evals低すぎるとエラー
 
 shap.plots.bar(shap_values, max_display=20)
 shap.plots.beeswarm(shap_values, max_display=20)
