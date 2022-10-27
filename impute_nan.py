@@ -7,7 +7,7 @@ df = df.drop(["Unnamed: 0"], axis=1)
 df = df.set_index("SAMPLENUMBER")
 print(df.head())  # 967 columns
 
-numeric_columns = [colname for colname in df.columns if df[colname].dtype == float]  # 数値のみ抽出
+numeric_columns = [colname for colname in df.columns if df[colname].dtype == float]  # 数値のみ抽出(OCS_0or1が消える)
 df = df[numeric_columns]
 print(df.head())  # 945 columns
 
