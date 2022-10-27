@@ -1,4 +1,5 @@
 使う順番
+
 1 main.py
 
 2 NaN_check.py
