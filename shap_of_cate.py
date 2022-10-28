@@ -59,12 +59,12 @@ shap.plots.beeswarm(shap_values, max_display=20)
 
 # ハイパーパラメータをチューニング
 search_params = {
-    'n_estimators': [300, 500, 1000, 10000],
-    'max_features': [i for i in range(1, X_train.shape[1])],
+    'n_estimators': [300, 500],
+    # 'max_features': [i for i in range(1, X_train.shape[1])],
     'random_state': [2525],
-    'n_jobs': [1, -1],
-    'min_samples_split': [5, 10, 20],
-    'max_depth': [10, 20, 30]
+    'n_jobs': [1],
+    'min_samples_split': [5, 10],
+    'max_depth': [20, 30]
 }
 
 # グリッドサーチ

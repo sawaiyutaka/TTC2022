@@ -2,14 +2,14 @@ import pandas as pd
 import numpy as np
 from missingpy import MissForest
 
-df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_alldata/data4grf.csv", delimiter=",")
+df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_alldata/data4grf_n1175.csv", delimiter=",")
 df = df.drop(["Unnamed: 0"], axis=1)
 df = df.set_index("SAMPLENUMBER")
-print(df.head())  # 967 columns
+print(df.head())  # 977 columns
 
-numeric_columns = [colname for colname in df.columns if df[colname].dtype == float]  # 数値のみ抽出(OCS_0or1が消える)
+numeric_columns = [colname for colname in df.columns if df[colname].dtype == float]  # 数値のみ抽出
 df = df[numeric_columns]
-print(df.head())  # 945 columns
+print(df.head())  # 956 columns
 
 # Make an instance and perform the imputation
 imputer = MissForest(criterion='squared_error', max_features=1.0)
