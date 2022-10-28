@@ -15,9 +15,11 @@ import shap
 from sklearn.model_selection import train_test_split, GridSearchCV
 
 import warnings
+
+FEATURE = "AB58"  # 調べたい項目
 warnings.filterwarnings('ignore')
 
-df = pd.read_csv("//Volumes/Pegasus32R8/TTC/2022csv/TTC2022_CATE_shap.csv", delimiter=",")
+df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_alldata/TTC2022_alldata_CATE.csv", delimiter=",")
 print(df.head(10))
 
 shap.initjs()  # いくつかの可視化で必要
@@ -47,21 +49,28 @@ predicted_Y_val = model.predict(X_val)
 print("model_score: ", model.score(X_val, Y_val))
 
 # shap valueで評価
+"""
 # Fits the explainer
 explainer = shap.Explainer(model.predict, X_val)
 
-# 短時間の近似式
-# explainer = shap.TreeExplainer(model)
-
 # Calculates the SHAP values - It takes some time
-shap_values = explainer(X_val[:100])
+shap_values = explainer(X_val[:100], max_evals=2000)
+true_shap = shap_values[:, FEATURE].abs.mean(0).values
+print("ランダム化前のshap value\n", true_shap)
+
+"""
+
+# 短時間の近似式
+explainer = shap.TreeExplainer(model)
+shap_values = explainer.shap_values(X_val[:100])
 
 # print(shap_values)
 
-str = "AB61"  # 調べたい項目
-true_shap = shap_values[:, str].abs.mean(0).values
-print("ランダム化前のshap value\n", true_shap)
-
+print("shap value\n", shap_values)
+j = X.columns.get_loc(FEATURE)  # カラム数を抽出
+print("FEATUREの列: ", j)
+true_shap = np.abs(shap_values[:, j]).mean()
+print("ランダム化前のshap value近似値\n", true_shap)
 
 # yをランダム化
 ls = []
@@ -87,21 +96,23 @@ for i in range(1000):
     # print("model_score: ", model.score(X_val, Y_val))
 
     # shap valueで評価
+    """
     # Fits the explainer
     explainer = shap.Explainer(model.predict, X_val)
     # Calculates the SHAP values - It takes some time
-    shap_values = explainer(X_val[:100])
+    shap_values = explainer(X_val[:100], max_evals=2000)
+    print(i + 1, "回目のランダム化のshap value\n", shap_values[:, FEATURE].abs.mean(0).values)
 
-    print(i + 1, "回目のランダム化のshap value\n", shap_values[:, str].abs.mean(0).values)
+    ls.append(shap_values[:, FEATURE].abs.mean(0).values)
+    """
 
-    ls.append(shap_values[:, str].abs.mean(0).values)
-
-    # explainer = shap.TreeExplainer(model)
-    # shap_values = explainer.shap_values(X_val[:100])  # , check_additivity=False)  # 数が少ないとSHAPの予測が不正確になるためエラーになる
+    # treeexplainerで近似（早い）
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer.shap_values(X_val[:100])  # , check_additivity=False)  # 数が少ないとSHAPの予測が不正確になるためエラーになる
 
     # TreeEcplainerのとき
-    # print(i+1, "回目のランダム化のshap value\n", np.abs(shap_values[:, j]).mean())
-    # ls.append(np.abs(shap_values[:, j]).mean())
+    print(i+1, "回目のランダム化のshap value近似値\n", np.abs(shap_values[:, j]).mean())
+    ls.append(np.abs(shap_values[:, j]).mean())
 
 print(ls)
 # 数値的に上下5%の値をみてみる
