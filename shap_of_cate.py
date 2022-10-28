@@ -30,6 +30,7 @@ print(y)
 
 Y_train, Y_val, X_train, X_val = train_test_split(y, X, test_size=.2)
 
+'''
 # sklearnの機械学習モデル（ランダムフォレスト）のインスタンスを作成する
 # 教師データと教師ラベルを使い、fitメソッドでモデルを学習
 model = RandomForestRegressor(
@@ -54,8 +55,8 @@ shap_values = explainer(X_val, max_evals=2000)  # max_evals低すぎるとエラ
 
 shap.plots.bar(shap_values, max_display=20)
 shap.plots.beeswarm(shap_values, max_display=20)
+'''
 
-"""
 # ハイパーパラメータをチューニング
 search_params = {
     'n_estimators': [300, 500, 1000, 10000],
@@ -79,15 +80,7 @@ gsr.fit(X_train, Y_train)
 # 最もよかったモデル
 print(gsr.best_estimator_)
 print("最もよかったモデルの評価", gsr.best_estimator_.score(X_val, Y_val))
-"""
 
-"""
-print("非労働人口のshap: ", shap_values[:, "非労働力人口【人】"].abs.mean(0).values)
-
-# TreeExplainerで計算（やや早い）
-explainer = shap.TreeExplainer(model)
-shap_values = explainer.shap_values(X_val[:100])  # , check_additivity=False)  # 数が少ないとSHAPの予測が不正確になるためエラーになる
-"""
 
 """
 print("shap value\n", shap_values)
