@@ -6,7 +6,6 @@ from sklearn.linear_model import LassoCV
 from sklearn.model_selection import train_test_split
 from econml.dml import CausalForestDML
 
-OCS_CUT_OFF = 12  # 強迫のCBCLカットライン。（-8点）以下は強迫なしとする。
 # imputeした後のデータフレーム、PLEとAQの合計得点前
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_alldata/base_ple_imputed.csv", delimiter=",")
 print(df.head())
@@ -37,8 +36,6 @@ print("AQ合計点を追加した\n", df.head())
 Y = df_Y['PLE_sum']  # 'CD65_1'などとすると、単一項目で見られる
 print("Y\n", Y)
 
-# imputeで消えたOCS_0or1を戻す
-df["OCS_0or1"] = (df["OCS_sum"] > OCS_CUT_OFF) * 1
 T = df['OCS_0or1']  # 強迫CMCL5点以上であることをtreatmentとする
 
 # 第３期のPLEを除外
