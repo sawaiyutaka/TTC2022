@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 # 最大表示列数の指定（ここでは50列を指定）
 # pd.set_option('display.max_columns', 300)
 
-all_1st = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv/TTC2022_1st_all.csv", delimiter=",", low_memory=False)
+all_1st = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_1st_outcome.csv", delimiter=",", low_memory=False)
 print(all_1st)
 
 print("ple_naiveの中のNaN個数\n", all_1st.isnull().sum())
@@ -28,7 +28,7 @@ print(sr.index)  # NaNが●以上の項目名を抽出★
 
 df = all_1st[sr.index]
 print("columns under cutoff\n", df)
-# df.to_csv("/Volumes/Pegasus32R8/TTC/2022csv/columns_NAN_under_500.csv")
+df.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/columns_NAN_under_500.csv")
 
 name_columns = pd.DataFrame(sr, columns=["num_of_NaN"])
 print(name_columns)

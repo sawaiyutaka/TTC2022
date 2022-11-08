@@ -19,7 +19,7 @@ import warnings
 FEATURE = "AB58"  # 調べたい項目
 warnings.filterwarnings('ignore')
 
-df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_alldata/TTC2022_alldata_CATE.csv", delimiter=",")
+df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE.csv", delimiter=",")
 print(df.head(10))
 
 shap.initjs()  # いくつかの可視化で必要
@@ -36,9 +36,9 @@ Y_train, Y_val, X_train, X_val = train_test_split(y, X, test_size=.2)
 # 教師データと教師ラベルを使い、fitメソッドでモデルを学習
 model = RandomForestRegressor(
     max_depth=30,
-    max_features=25,
+    max_features=400,
     min_samples_split=5,
-    n_estimators=500,
+    n_estimators=2000,
     n_jobs=1,
     random_state=2525)
 

@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 from econml.dml import CausalForestDML
 
 # imputeした後のデータフレーム、PLEとAQの合計得点前
-df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_alldata/base_ple_imputed.csv", delimiter=",")
+df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed.csv", delimiter=",")
 print(df.head())
 
 # PLEの合計点を作成
@@ -52,7 +52,7 @@ print(X)
 # 第1期の強迫を除外
 X = X.drop(["AB71", "AB87", "AB88", "AB104", "AB114", "AB126", "AB127", "AB145"], axis=1)
 X = X.drop(["AD57", "AD58", "AD59", "AD60", "AD61", "AD62"], axis=1)
-X.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_alldata/X_imputed.csv")
+X.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv")
 
 
 # 第1期の強迫、PLEを除外したXを読み込み
@@ -120,7 +120,7 @@ print("要素数", len(te_pred))
 # 各CATEの値のXの要素を示す
 df_new = df.assign(te_pred=te_pred)
 print("CATEを追加\n", df_new)
-df_new.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_alldata/TTC2022_alldata_CATE.csv")
+df_new.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE.csv")
 
 # CATEの推定結果を確認
 print("CATE of CausalForest: ", round(np.mean(te_pred), 2))
@@ -136,10 +136,10 @@ print("upper＝影響を受けやすかった10%: \n", df_upper)
 print("lower＝影響を受けにくかった10%: \n", df_lower)
 
 print("df_upper\n", df_upper.describe())
-df_upper.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_alldata/TTC2022_upper.csv")
+df_upper.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_upper.csv")
 
 print("df_lower\n", df_lower.describe())
-df_lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_alldata/TTC2022_lower.csv")
+df_lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower.csv")
 
 # CATE(全体)
 s.set()
