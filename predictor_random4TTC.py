@@ -16,7 +16,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 
 import warnings
 
-FEATURE = "AB58"  # 調べたい項目
+FEATURE = "AB105"  # 調べたい項目
 warnings.filterwarnings('ignore')
 
 df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE.csv", delimiter=",")

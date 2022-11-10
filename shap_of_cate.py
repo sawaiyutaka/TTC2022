@@ -37,9 +37,9 @@ Y_train, Y_val, X_train, X_val = train_test_split(y, X, test_size=.2)
 # 教師データと教師ラベルを使い、fitメソッドでモデルを学習
 model = RandomForestRegressor(
     max_depth=30,
-    max_features=np.sqrt(X_train.shape[1]).astype(int),  # 1回に使用する特徴量はsqrt(FEATURES)
+    max_features=400,  # np.sqrt(X_train.shape[1]).astype(int),  # 1回に使用する特徴量はsqrt(FEATURES)
     min_samples_split=5,
-    n_estimators=10000,
+    n_estimators=2000,
     n_jobs=1,
     random_state=2525)
 
