@@ -15,7 +15,7 @@ import codecs
 # 第１期量的データ全部
 
 # プログラム2｜所定フォルダ内の「data*.xlsx」を取得
-files = glob.glob('/Volumes/Pegasus32R8/TTC/2022rawdata/a*.xlsx')
+files = glob.glob('/Volumes/Pegasus32R8/TTC/2022rawdata/a*.xls*')
 
 # プログラム3｜変数listを空リストで設定
 lst = []
