@@ -36,8 +36,8 @@ Y_train, Y_val, X_train, X_val = train_test_split(y, X, test_size=.2)
 # 教師データと教師ラベルを使い、fitメソッドでモデルを学習
 model = RandomForestRegressor(
     max_depth=None,
-    max_features='sqrt',  # The number of features to consider when looking for the best split
-    # 'auto',  # max_features=n_features
+    max_features=X_train.shape[1],  # The number of features to consider when looking for the best split
+    # 'sqrt'
     min_samples_split=5,
     n_estimators=2000,
     n_jobs=-1,  # number of jobs to run in parallel(-1 means using all processors)
@@ -49,7 +49,7 @@ model.fit(X_train, Y_train)
 # 学習済みモデルの評価
 predicted_Y_val = model.predict(X_val)
 print("model_score: ", model.score(X_val, Y_val))
-
+'''
 # shap valueで評価（時間がかかる）
 # Fits the explainer
 explainer = shap.Explainer(model.predict, X_val)
@@ -58,15 +58,15 @@ shap_values = explainer(X_val, max_evals=2000)  # max_evals低すぎるとエラ
 
 shap.plots.bar(shap_values, max_display=30)
 shap.plots.beeswarm(shap_values, max_display=30)
+'''
 
 # ハイパーパラメータをチューニング
 search_params = {
-    'n_estimators': [100, 500, 1000],
-    # 'max_features': [200, 300, 400],  # [i for i in range(1, X_train.shape[1])],
+    'n_estimators': [100, 500, 1000, 2000],
+    'max_features': [X_train.shape[1]],  # [i for i in range(1, X_train.shape[1])],
     'random_state': [2525],
-    # 'n_jobs': [1],
-    'min_samples_split': [1, 3, 5, 10, 15, 20],
-    'min_samples_leaf': [1, 3, 4, 10, 15, 20]
+    'min_samples_split': [1, 5, 10, 20],
+    'min_samples_leaf': [1, 5, 10, 20]
     # 'max_depth': [20, 30, 40]
 }
 
@@ -74,7 +74,8 @@ search_params = {
 gsr = GridSearchCV(
     RandomForestRegressor(),
     search_params,
-    cv=1,  # Determines the cross-validation splitting strategy
+    n_jobs=-1,
+    cv=3,  # Determines the cross-validation splitting strategy
     verbose=True  # Controls the verbosity when fitting and predicting.
 )
 

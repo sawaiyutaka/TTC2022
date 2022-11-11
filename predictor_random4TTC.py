@@ -35,11 +35,11 @@ Y_train, Y_val, X_train, X_val = train_test_split(y, X, test_size=.2)
 # sklearnの機械学習モデル（ランダムフォレスト）のインスタンスを作成する
 # 教師データと教師ラベルを使い、fitメソッドでモデルを学習
 model = RandomForestRegressor(
-    max_depth=30,
-    max_features=400,
+    max_depth=None,
+    max_features=X_train.shape[1],  # The number of features to consider when looking for the best split
     min_samples_split=5,
     n_estimators=2000,
-    n_jobs=1,
+    n_jobs=-1,  # number of jobs to run in parallel(-1 means using all processors)
     random_state=2525)
 
 model.fit(X_train, Y_train)
