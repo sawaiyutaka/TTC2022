@@ -57,7 +57,7 @@ X.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv")
 
 # 第1期の強迫、PLEを除外したXを読み込み
 # X = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_alldata/X_imputed.csv", delimiter=",")
-print("X:\n", X.head(10))
+print("X:\n", X)
 print("補完後のNaN個数\n", X.isnull().sum())
 
 # https://github.com/microsoft/EconML/blob/main/notebooks/Generalized%20Random%20Forests.ipynb
