@@ -116,7 +116,7 @@ for i in range(1000):
 
 print(ls)
 # 数値的に上下5%の値をみてみる
-print("95%CI of shap at random: ", np.quantile(ls, [0.05, 0.95]))
+print("95%CI of shap at random: ", np.quantile(ls, [0.025, 0.975]))
 
 # まず1000回分をプロット
 s.set()
@@ -132,6 +132,5 @@ df4plot = pd.concat([shap_random, shap_true])
 
 s.displot(data=df4plot, x='shap_value', hue='color', multiple='stack')
 plt.show()
-
 
 

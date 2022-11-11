@@ -33,7 +33,7 @@ ls = []
 # プログラム4｜プログラム2で取得したエクセルを一つずつpandasデータとして取得
 for file in files:
     d = pd.read_excel(file)
-    # print(d)
+    print(file)
     d = d.set_index("SAMPLENUMBER")
     # print(d)
     ls.append(d)
@@ -61,6 +61,7 @@ print("OCS_0or1\n", oc_2nd)  # 第２期にOC欠損値なしは2733行
 
 # AQ
 aq_2nd = oc_ple.filter(regex='^(BB12|BB13)', axis=1)
+aq_2nd["AQ_sum"] = aq_2nd.sum(axis=1)
 print("第２期AQ\n", aq_2nd)
 
 
@@ -74,7 +75,7 @@ print("第３期PLE：\n", ple_3rd)
 
 
 # 第１期にPLEがなかった群を抽出
-df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/columns_NAN_under_500.csv", delimiter=",")
+df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/columns_NAN_under_150.csv", delimiter=",")
 df = df.set_index("SAMPLENUMBER")
 print(df.head())
 # print("第１期データのNaN個数\n", df.isnull().sum())
@@ -91,7 +92,7 @@ ple_1st_neg = ((df_PLE == 3.0) | (df_PLE == 2.0))
 print("ple_1st_neg\n", ple_1st_neg)
 print("1回目調査でPLEなしの人数\n", ple_1st_neg.sum())
 print(df_PLE[ple_1st_neg])
-# ple_neg = df_PLE[ple_1st_neg].dropna(how='any')  # ★第１期に「あったかもしれない」「なかった」を含むもののみ…最終的に少なすぎる
+# ple_neg = df_PLE[ple_1st_neg].dropna(how='any')  # ★第１期に「あったかもしれない」「なかった」を含むもののみ
 print("1回目調査でPLEなし\n", ple_neg)
 
 ple_neg_oc = pd.merge(ple_neg, oc_2nd, left_index=True, right_index=True)  # 第１期にpleなしのうち、OCにNaNなし
@@ -99,9 +100,9 @@ print("第１期にpleなしのうち、OCにNaNなし\n", ple_neg_oc)
 
 cols_to_use = df.columns.difference(ple_neg_oc.columns)
 print("第１期量的データにあって、PLEやOCSに含まれない項目を検出\n", cols_to_use)
-df4grf = ple_neg_oc.join([df[cols_to_use], aq_2nd, ple_3rd], how='inner')
+df4grf = ple_neg_oc.join([df[cols_to_use], base_1st, aq_2nd, ple_3rd], how='inner')
 print(df4grf)
-df4grf.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf_n1844.csv")  # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
+df4grf.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf.csv")  # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
 
 print("NaN個数\n", df4grf["OCS_0or1"].isnull().sum())
 print("OCSあり\n", df4grf["OCS_0or1"].sum())

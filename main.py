@@ -32,9 +32,8 @@ for file in files:
 df1 = pd.concat(lst, axis=1, join='inner')
 print(df1)
 
-
 # 解析シートのあるエクセルの読み込み
-files = glob.glob('/Volumes/Pegasus32R8/TTC/2022rawdata/1*.xlsx')
+files = glob.glob('/Volumes/Pegasus32R8/TTC/2022rawdata/1*.xls*')
 
 # プログラム3｜変数listを空リストで設定
 lst2 = []
@@ -53,6 +52,9 @@ print(df2)
 
 df = pd.concat([df1, df2], axis=1, join='inner')
 print(df)
+
+df = df.loc[:, ~df.columns.duplicated()]
+print("重複を削除\n", df)
 
 # プログラム6｜エクセルファイルを書き出す
 df.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_1st_outcome.csv")
