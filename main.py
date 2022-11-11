@@ -43,6 +43,7 @@ for file in files:
     d = pd.read_excel(file, sheet_name='解析')
     print(file)
     d = d.set_index("SAMPLENUMBER")
+    d = d.filter(regex='Imp$', axis=1)  # Impで終わる列＝欠損値１以下なら平均値で補完
     # print(d)
     lst2.append(d)
 
@@ -57,4 +58,4 @@ df = df.loc[:, ~df.columns.duplicated()]
 print("重複を削除\n", df)
 
 # プログラム6｜エクセルファイルを書き出す
-df.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_1st_outcome.csv")
+df.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_1st_outcome_Imp.csv")

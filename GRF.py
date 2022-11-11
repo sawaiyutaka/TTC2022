@@ -8,7 +8,8 @@ from econml.dml import CausalForestDML
 
 # imputeした後のデータフレーム、PLEとAQの合計得点前
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed.csv", delimiter=",")
-print(df.head())
+print(df)
+
 
 # PLEの合計点を作成
 df_Y = df[["CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"]]
@@ -52,6 +53,9 @@ print(X)
 # 第1期の強迫を除外
 X = X.drop(["AB71", "AB87", "AB88", "AB104", "AB114", "AB126", "AB127", "AB145"], axis=1)
 X = X.drop(["AD57", "AD58", "AD59", "AD60", "AD61", "AD62"], axis=1)
+
+X = X.loc[:, ~X.columns.duplicated()]
+print("重複を削除\n", X)
 X.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv")
 
 

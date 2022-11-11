@@ -86,13 +86,13 @@ print("df_PLE\n", df_PLE)
 ple_1st_pos = (df_PLE != 1.0)
 print("'Yes, definitely'でないところをTRUE\n", ple_1st_pos)
 # print("1回目調査でPLEが「Yes, definitely」\n", ple_1st_pos.sum())
-ple_neg = df_PLE[ple_1st_pos].dropna(how='any')
+# ple_neg = df_PLE[ple_1st_pos].dropna(how='any')
 
 ple_1st_neg = ((df_PLE == 3.0) | (df_PLE == 2.0))
 print("ple_1st_neg\n", ple_1st_neg)
 print("1回目調査でPLEなしの人数\n", ple_1st_neg.sum())
 print(df_PLE[ple_1st_neg])
-# ple_neg = df_PLE[ple_1st_neg].dropna(how='any')  # ★第１期に「あったかもしれない」「なかった」を含むもののみ
+ple_neg = df_PLE[ple_1st_neg].dropna(how='any')  # ★第１期に「あったかもしれない」「なかった」を含むもののみ
 print("1回目調査でPLEなし\n", ple_neg)
 
 ple_neg_oc = pd.merge(ple_neg, oc_2nd, left_index=True, right_index=True)  # 第１期にpleなしのうち、OCにNaNなし
