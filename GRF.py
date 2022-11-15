@@ -46,9 +46,11 @@ print("Y\n", Y)
 
 T = df['OCS_0or1']  # 強迫CMCL5点以上であることをtreatmentとする
 
-# 第３期のPLEを除外
-X = df.drop(["PLE_sum", "CD57_1", "CD58_1", "CD59_1", "CD60_1",
-             "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"], axis=1)
+# 第3期のPLEを除外
+X = df.drop(["PLE_sum", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"], axis=1)
+
+# 第4期のPLEを除外
+X = X.drop(["DD64_1", "DD65_1", "DD66_1", "DD67_1", "DD68_1", "DD69_1", "DD70_1", "DD71_1", "DD72_1"], axis=1)
 
 # 第２期の強迫を除外
 X = X.drop(["BB39", "BB56", "BB57", "BB73", "BB83", "BB95", "BB96", "BB116", "OCS_sum", "OCS_0or1"], axis=1)
@@ -63,7 +65,7 @@ X = X.drop(["AD57", "AD58", "AD59", "AD60", "AD61", "AD62"], axis=1)
 
 X = X.loc[:, ~X.columns.duplicated()]
 print("重複を削除\n", X)
-X.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed_4th.csv")
+X.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv")
 
 
 # 第1期の強迫、PLEを除外したXを読み込み
@@ -132,7 +134,7 @@ te_pred_test2 = causal_forest.effect(X_test2)
 print("te_pred: \n", te_pred)
 print("要素数", len(te_pred))
 # 各CATEの値のXの要素を示す
-df_new = df.assign(te_pred=te_pred)
+df_new = X.assign(te_pred=te_pred)
 print("CATEを追加\n", df_new)
 df_new.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_4th.csv")
 

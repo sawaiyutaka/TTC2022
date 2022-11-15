@@ -16,12 +16,12 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 #    df = pd.read_table(file, delimiter=",")
 
 # 特徴量 X、アウトカム y
-df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_4th.csv", delimiter=",")
+df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_3rd.csv", delimiter=",")
 print(df.head())
 y = df["te_pred"]
 print(y)
 
-X = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed_4th.csv", delimiter=",")
+X = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv", delimiter=",")
 X = X.drop(["Unnamed: 0", "SAMPLENUMBER"], axis=1)
 print(X.head())
 
@@ -36,7 +36,7 @@ model = RandomForestRegressor(
     min_samples_split=2,
     min_samples_leaf=1,
     n_estimators=2000,
-    n_jobs=-1,  # number of jobs to run in parallel(-1 means using all processors)
+    n_jobs=30,  # number of jobs to run in parallel(-1 means using all processors)
     random_state=2525)
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
 
@@ -45,7 +45,7 @@ model.fit(X_train, Y_train)
 # 学習済みモデルの評価
 predicted_Y_val = model.predict(X_val)
 print("model_score: ", model.score(X_val, Y_val))
-'''
+
 # shap valueで評価（時間がかかる）
 # Fits the explainer
 explainer = shap.Explainer(model.predict, X_val)
@@ -54,7 +54,7 @@ shap_values = explainer(X_val, max_evals=2000)  # max_evals低すぎるとエラ
 
 shap.plots.bar(shap_values, max_display=30)
 shap.plots.beeswarm(shap_values, max_display=30)
-'''
+
 
 """
 # ハイパーパラメータをチューニング

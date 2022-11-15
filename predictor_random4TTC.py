@@ -16,7 +16,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 
 import warnings
 
-FEATURE = "AB58"  # 調べたい項目
+FEATURE = "AB105"  # 調べたい項目
 warnings.filterwarnings('ignore')
 
 df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_4th.csv", delimiter=",")
@@ -35,12 +35,15 @@ Y_train, Y_val, X_train, X_val = train_test_split(y, X, test_size=.2)
 # sklearnの機械学習モデル（ランダムフォレスト）のインスタンスを作成する
 # 教師データと教師ラベルを使い、fitメソッドでモデルを学習
 model = RandomForestRegressor(
-    max_depth=None,
-    max_features=X_train.shape[1],  # The number of features to consider when looking for the best split
-    min_samples_split=5,
-    n_estimators=2000,
-    n_jobs=-1,  # number of jobs to run in parallel(-1 means using all processors)
-    random_state=2525)
+    # max_depth=None,
+    # max_features=200,  # X_train.shape[1],  # The number of features to consider when looking for the best split
+    # 'sqrt'も可能
+    # min_samples_split=2,
+    # min_samples_leaf=1,
+    # n_estimators=1000,
+    # n_jobs=-1,  # number of jobs to run in parallel(-1 means using all processors)
+    # random_state=2525
+    )
 
 model.fit(X_train, Y_train)
 
@@ -74,7 +77,7 @@ print("ランダム化前のshap value近似値\n", true_shap)
 
 # yをランダム化
 ls = []
-for i in range(100):
+for i in range(1000):
     y = y.sample(frac=1, random_state=i)
     # print("ランダム化", i+1, "回目のy:\n", y)
 
@@ -82,15 +85,7 @@ for i in range(100):
 
     # sklearnの機械学習モデル（ランダムフォレスト）のインスタンスを作成する
     # 教師データと教師ラベルを使い、fitメソッドでモデルを学習
-    model = RandomForestRegressor(
-        max_depth=None,
-        max_features=200,  # X_train.shape[1],  # The number of features to consider when looking for the best split
-        # 'sqrt'も可能
-        min_samples_split=2,
-        min_samples_leaf=1,
-        n_estimators=2000,
-        n_jobs=-1,  # number of jobs to run in parallel(-1 means using all processors)
-        random_state=2525)
+
     model.fit(X_train, Y_train)
 
     # 学習済みモデルの評価
@@ -121,7 +116,7 @@ print(ls)
 print("95%CI of shap at random: ", np.quantile(ls, [0.025, 0.975]))
 
 # まず1000回分をプロット
-s.set()
+# s.set()
 s.displot(ls)
 plt.show()
 
