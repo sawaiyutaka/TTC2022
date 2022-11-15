@@ -36,9 +36,10 @@ Y_train, Y_val, X_train, X_val = train_test_split(y, X, test_size=.2)
 # 教師データと教師ラベルを使い、fitメソッドでモデルを学習
 model = RandomForestRegressor(
     max_depth=None,
-    max_features=X_train.shape[1],  # The number of features to consider when looking for the best split
-    # 'sqrt'
-    min_samples_split=5,
+    max_features=200,  # X_train.shape[1],  # The number of features to consider when looking for the best split
+    # 'sqrt'も可能
+    min_samples_split=2,
+    min_samples_leaf=1,
     n_estimators=2000,
     n_jobs=-1,  # number of jobs to run in parallel(-1 means using all processors)
     random_state=2525)
@@ -60,14 +61,16 @@ shap.plots.bar(shap_values, max_display=30)
 shap.plots.beeswarm(shap_values, max_display=30)
 '''
 
+"""
 # ハイパーパラメータをチューニング
 search_params = {
-    'n_estimators': [100, 500, 1000, 2000],
-    'max_features': [X_train.shape[1]],  # [i for i in range(1, X_train.shape[1])],
+    'n_estimators': [500, 1000, 2000],
+    'max_features': [i for i in range(100, X_train.shape[1], 50)],
     'random_state': [2525],
-    'min_samples_split': [1, 5, 10, 20],
+    'min_samples_split': [2, 5, 10, 20],
     'min_samples_leaf': [1, 5, 10, 20]
     # 'max_depth': [20, 30, 40]
+    # Best model score 0.57(max_features=200, n_estimators=2000, random_state=2525)
 }
 
 # グリッドサーチ
@@ -84,3 +87,4 @@ gsr.fit(X_train, Y_train)
 # 最もよかったモデル
 print(gsr.best_estimator_)
 print("最もよかったモデルの評価", gsr.best_estimator_.score(X_val, Y_val))
+"""

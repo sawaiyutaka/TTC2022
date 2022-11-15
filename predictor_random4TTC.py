@@ -16,7 +16,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 
 import warnings
 
-FEATURE = "AB105"  # 調べたい項目
+FEATURE = "AB58"  # 調べたい項目
 warnings.filterwarnings('ignore')
 
 df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE.csv", delimiter=",")
@@ -74,7 +74,7 @@ print("ランダム化前のshap value近似値\n", true_shap)
 
 # yをランダム化
 ls = []
-for i in range(1000):
+for i in range(100):
     y = y.sample(frac=1, random_state=i)
     # print("ランダム化", i+1, "回目のy:\n", y)
 
@@ -83,11 +83,13 @@ for i in range(1000):
     # sklearnの機械学習モデル（ランダムフォレスト）のインスタンスを作成する
     # 教師データと教師ラベルを使い、fitメソッドでモデルを学習
     model = RandomForestRegressor(
-        max_depth=30,
-        max_features=25,
-        min_samples_split=5,
-        n_estimators=500,
-        n_jobs=1,
+        max_depth=None,
+        max_features=200,  # X_train.shape[1],  # The number of features to consider when looking for the best split
+        # 'sqrt'も可能
+        min_samples_split=2,
+        min_samples_leaf=1,
+        n_estimators=2000,
+        n_jobs=-1,  # number of jobs to run in parallel(-1 means using all processors)
         random_state=2525)
     model.fit(X_train, Y_train)
 
