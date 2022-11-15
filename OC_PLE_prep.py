@@ -65,14 +65,21 @@ aq_2nd["AQ_sum"] = aq_2nd.sum(axis=1)
 print("第２期AQ\n", aq_2nd)
 
 
-# 第３期PLEのデータフレーム
+# 第3期PLEのデータフレーム
 ple = oc_ple.filter(like='_1', axis=1)
 print("抽出：\n", ple)  # PLEのうち、頻度を聞く項目のみに絞りたい
 
-ple_3rd = ple.filter(like='CD', axis=1)  # PLEのうち、第３期のみ
-ple_3rd = ple_3rd.drop('CD70_1', axis=1)  # PLE第３期のうち、頻度以外の項目を削除
-print("第３期PLE：\n", ple_3rd)
+ple_3rd = ple.filter(like='CD', axis=1)  # PLEのうち、第3期のみ
+ple_3rd = ple_3rd.drop('CD70_1', axis=1)  # PLE第3期のうち、頻度以外の項目を削除
+print("第3期PLE：\n", ple_3rd)
 
+# 第4期PLEのデータフレーム
+ple = oc_ple.filter(like='_1', axis=1)
+print("抽出：\n", ple)  # PLEのうち、頻度を聞く項目のみに絞りたい
+
+ple_4th = ple.filter(like='DD', axis=1)  # PLEのうち、第4期のみ
+ple_4th = ple_4th.drop('DD77_1', axis=1)  # PLE第4期のうち、頻度以外の項目を削除
+print("第4期PLE：\n", ple_4th)
 
 # 第１期にPLEがなかった群を抽出
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/columns_NAN_under_150.csv", delimiter=",")
@@ -100,9 +107,9 @@ print("第１期にpleなしのうち、OCにNaNなし\n", ple_neg_oc)
 
 cols_to_use = df.columns.difference(ple_neg_oc.columns)
 print("第１期量的データにあって、PLEやOCSに含まれない項目を検出\n", cols_to_use)
-df4grf = ple_neg_oc.join([df[cols_to_use], base_1st, aq_2nd, ple_3rd], how='inner')
+df4grf = ple_neg_oc.join([df[cols_to_use], base_1st, aq_2nd, ple_3rd, ple_4th], how='inner')
 print(df4grf)
-df4grf.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf.csv")  # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
+df4grf.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf_4th.csv")  # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
 
 print("NaN個数\n", df4grf["OCS_0or1"].isnull().sum())
 print("OCSあり\n", df4grf["OCS_0or1"].sum())

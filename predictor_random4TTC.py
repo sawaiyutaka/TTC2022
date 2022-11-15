@@ -19,7 +19,7 @@ import warnings
 FEATURE = "AB58"  # 調べたい項目
 warnings.filterwarnings('ignore')
 
-df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE.csv", delimiter=",")
+df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_4th.csv", delimiter=",")
 print(df.head(10))
 
 shap.initjs()  # いくつかの可視化で必要

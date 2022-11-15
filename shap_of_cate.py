@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 import codecs
 import japanize_matplotlib
-import matplotlib.pyplot as plt
-import seaborn as s
 
 # モデルはRandom Forestを使う
 from sklearn.ensemble import RandomForestRegressor
@@ -18,15 +16,12 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 #    df = pd.read_table(file, delimiter=",")
 
 # 特徴量 X、アウトカム y
-df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE.csv", delimiter=",")
+df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_4th.csv", delimiter=",")
 print(df.head())
 y = df["te_pred"]
-# y = df["PLE_sum"]
 print(y)
-# s.displot(y)
-# plt.show()
 
-X = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv", delimiter=",")
+X = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed_4th.csv", delimiter=",")
 X = X.drop(["Unnamed: 0", "SAMPLENUMBER"], axis=1)
 print(X.head())
 
