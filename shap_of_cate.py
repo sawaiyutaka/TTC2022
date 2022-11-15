@@ -36,7 +36,7 @@ model = RandomForestRegressor(
     min_samples_split=2,
     min_samples_leaf=1,
     n_estimators=2000,
-    n_jobs=30,  # number of jobs to run in parallel(-1 means using all processors)
+    n_jobs=16,  # number of jobs to run in parallel(-1 means using all processors)
     random_state=2525)
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
 
@@ -72,7 +72,7 @@ search_params = {
 gsr = GridSearchCV(
     RandomForestRegressor(),
     search_params,
-    n_jobs=-1,
+    n_jobs=16,  # max18core
     cv=3,  # Determines the cross-validation splitting strategy
     verbose=True  # Controls the verbosity when fitting and predicting.
 )
