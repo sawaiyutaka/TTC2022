@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from missingpy import MissForest
 
-df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf_4th.csv", delimiter=",")
+df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf.csv", delimiter=",")
 df = df.drop(["Unnamed: 0"], axis=1)
 df = df.set_index("SAMPLENUMBER")
 print(df.head())
@@ -17,5 +17,5 @@ df_imputed = imputer.fit_transform(df)
 print("df_imputed\n", df_imputed)
 df[df.columns.values] = df_imputed
 df = df.round().astype(int)  # 各列を整数に丸める（身長、体重も丸め）
-df.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed_4th.csv")
+df.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed.csv")
 print(df)

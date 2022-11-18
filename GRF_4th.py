@@ -10,21 +10,21 @@ from econml.dml import CausalForestDML
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed.csv", delimiter=",")
 print(df)
 
+"""
 # PLEの合計点を作成(第3期)
 df_Y = df[["CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"]]
 print("df_Y\n", df_Y)
 df_Y["PLE_sum"] = df_Y.sum(axis=1)
 print("第3回PLE合計\n", df_Y["PLE_sum"])
 # df_Y = df_Y.reset_index()
-
 """
+
 # PLEの合計点を作成(第4期)
 df_Y = df[["DD64_1", "DD65_1", "DD66_1", "DD67_1", "DD68_1", "DD69_1", "DD70_1", "DD71_1", "DD72_1"]]
 print("df_Y\n", df_Y)
 df_Y["PLE_sum"] = df_Y.sum(axis=1)
 print("第4回PLE合計\n", df_Y["PLE_sum"])
 # df_Y = df_Y.reset_index()
-"""
 
 # AQの合計点を作成
 df_AQ = df.filter(regex='^(BB12|BB13)', axis=1)
@@ -65,7 +65,7 @@ X = X.drop(["AD57", "AD58", "AD59", "AD60", "AD61", "AD62"], axis=1)
 
 X = X.loc[:, ~X.columns.duplicated()]
 print("重複を削除\n", X)
-# X.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv")
+X.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv")
 
 
 # 第1期の強迫、PLEを除外したXを読み込み
@@ -136,7 +136,7 @@ print("要素数", len(te_pred))
 # 各CATEの値のXの要素を示す
 df_new = X.assign(te_pred=te_pred)
 print("CATEを追加\n", df_new)
-df_new.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_3rd.csv")
+df_new.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_4th.csv")
 
 # CATEの推定結果を確認
 print("CATE of CausalForest: ", round(np.mean(te_pred), 2))
@@ -152,15 +152,15 @@ print("upper＝影響を受けやすかった10%: \n", df_upper)
 print("lower＝影響を受けにくかった10%: \n", df_lower)
 
 print("df_upper\n", df_upper.describe())
-df_upper.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_upper_3rd.csv")
+df_upper.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_upper_4th.csv")
 
 print("df_lower\n", df_lower.describe())
-df_lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_3rd.csv")
+df_lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_4th.csv")
 
 # CATE(全体)
 s.set()
 s.displot(te_pred)
-plt.savefig("/Volumes/Pegasus32R8/TTC/202211/cate_3rd.svg")
+plt.savefig("/Volumes/Pegasus32R8/TTC/202211/cate_4th.svg")
 plt.show()
 
 '''

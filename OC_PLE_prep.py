@@ -109,7 +109,7 @@ cols_to_use = df.columns.difference(ple_neg_oc.columns)
 print("第１期量的データにあって、PLEやOCSに含まれない項目を検出\n", cols_to_use)
 df4grf = ple_neg_oc.join([df[cols_to_use], base_1st, aq_2nd, ple_3rd, ple_4th], how='inner')
 print(df4grf)
-df4grf.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf_4th.csv")  # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
+df4grf.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf.csv")  # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
 
 print("NaN個数\n", df4grf["OCS_0or1"].isnull().sum())
 print("OCSあり\n", df4grf["OCS_0or1"].sum())

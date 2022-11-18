@@ -16,7 +16,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 #    df = pd.read_table(file, delimiter=",")
 
 # 特徴量 X、アウトカム y
-df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_4th.csv", delimiter=",")
+df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_3rd.csv", delimiter=",")
 print(df.head())
 y = df["te_pred"]
 print(y)
@@ -52,8 +52,8 @@ explainer = shap.Explainer(model.predict, X_val)
 # Calculates the SHAP values - It takes some time
 shap_values = explainer(X_val, max_evals=2000)  # max_evals低すぎるとエラー
 
-shap.plots.bar(shap_values, max_display=14)
-shap.plots.beeswarm(shap_values, max_display=14)
+shap.plots.bar(shap_values, max_display=13)
+shap.plots.beeswarm(shap_values, max_display=13)
 
 
 """
