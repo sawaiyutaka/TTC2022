@@ -93,7 +93,7 @@ print("df_PLE\n", df_PLE)
 ple_1st_pos = (df_PLE != 1.0)
 print("'Yes, definitely'でないところをTRUE\n", ple_1st_pos)
 # print("1回目調査でPLEが「Yes, definitely」\n", ple_1st_pos.sum())
-# ple_neg = df_PLE[ple_1st_pos].dropna(how='any')
+# ple_negと排反になることを確認
 
 ple_1st_neg = ((df_PLE == 3.0) | (df_PLE == 2.0))
 print("ple_1st_neg\n", ple_1st_neg)
@@ -108,7 +108,7 @@ print("第１期にpleなしのうち、OCにNaNなし\n", ple_neg_oc)
 cols_to_use = df.columns.difference(ple_neg_oc.columns)
 print("第１期量的データにあって、PLEやOCSに含まれない項目を検出\n", cols_to_use)
 df4grf = ple_neg_oc.join([df[cols_to_use], base_1st, aq_2nd, ple_3rd, ple_4th], how='inner')
-print(df4grf)
+print("set_indexがなされているか？\n", df4grf)
 df4grf.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf.csv")  # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
 
 print("NaN個数\n", df4grf["OCS_0or1"].isnull().sum())

@@ -12,7 +12,14 @@ df = df[numeric_columns]
 print(df.head())
 
 # Make an instance and perform the imputation
-imputer = MissForest(criterion='squared_error', max_features=1.0)
+imputer = MissForest(max_iter=10, decreasing=False, missing_values=np.nan,
+                     copy=True, n_estimators=2000, criterion=('mse', 'gini'),
+                     max_depth=None, min_samples_split=2, min_samples_leaf=1,
+                     min_weight_fraction_leaf=0.0, max_features='auto',
+                     max_leaf_nodes=None, min_impurity_decrease=0.0,
+                     bootstrap=True, oob_score=False, n_jobs=10, random_state=None,
+                     verbose=0, warm_start=False, class_weight=None)
+
 df_imputed = imputer.fit_transform(df)
 print("df_imputed\n", df_imputed)
 df[df.columns.values] = df_imputed
