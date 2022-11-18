@@ -18,7 +18,13 @@ import warnings
 
 FEATURE = "AB105"  # 調べたい項目
 warnings.filterwarnings('ignore')
+"""
+# 現在の最大表示列数の出力
+pd.get_option("display.max_columns")
 
+# 最大表示列数の指定（ここでは50列を指定）
+pd.set_option('display.max_columns', 500)
+"""
 df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_4th.csv", delimiter=",")
 print(df.head(10))
 
@@ -26,7 +32,7 @@ shap.initjs()  # いくつかの可視化で必要
 
 # 特徴量 X、アウトカム y
 y = df["te_pred"]
-X = df.drop(["te_pred"], axis=1)
+X = df.drop(["te_pred", "Unnamed: 0", "SAMPLENUMBER"], axis=1)
 print(X.head())
 print(y)
 
@@ -70,7 +76,7 @@ shap_values = explainer.shap_values(X_val[:100])
 # print(shap_values)
 
 print("shap value\n", shap_values)
-j = X.columns.get_loc(FEATURE)  # カラム数を抽出
+j = X_val.columns.get_loc(FEATURE)  # カラム数を抽出
 print("FEATUREの列: ", j)
 true_shap = np.abs(shap_values[:, j]).mean()
 print("ランダム化前のshap value近似値\n", true_shap)

@@ -104,7 +104,7 @@ causal_forest = CausalForestDML(criterion='het',
                                 cv=10,
                                 model_t=LassoCV(),
                                 model_y=LassoCV(),
-                                random_state=42)
+                                random_state=2525)
 
 # fit train data to causal forest model
 causal_forest.fit(Y, T, X=X, W=W)

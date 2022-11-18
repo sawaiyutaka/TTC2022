@@ -8,6 +8,7 @@ from econml.dml import CausalForestDML
 
 # imputeした後のデータフレーム、PLEとAQの合計得点前
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed_4th.csv", delimiter=",")
+# _4thとあるが、ここより上は第3期の解析と第4期の解析は同じ
 print(df)
 
 # PLEの合計点を作成(第3期)
@@ -65,7 +66,7 @@ X = X.drop(["AD57", "AD58", "AD59", "AD60", "AD61", "AD62"], axis=1)
 
 X = X.loc[:, ~X.columns.duplicated()]
 print("重複を削除\n", X)
-X.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv")
+# X.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv")
 
 
 # 第1期の強迫、PLEを除外したXを読み込み
@@ -104,7 +105,7 @@ causal_forest = CausalForestDML(criterion='het',
                                 cv=10,
                                 model_t=LassoCV(),
                                 model_y=LassoCV(),
-                                random_state=42)
+                                random_state=2525)
 
 # fit train data to causal forest model
 causal_forest.fit(Y, T, X=X, W=W)
