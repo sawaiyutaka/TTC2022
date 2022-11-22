@@ -36,7 +36,7 @@ model = RandomForestRegressor(
     min_samples_split=2,
     min_samples_leaf=1,
     n_estimators=2000,
-    n_jobs=10,  # number of jobs to run in parallel(-1 means using all processors)
+    # n_jobs=8,  # number of jobs to run in parallel(-1 means using all processors)
     random_state=42)
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
 
