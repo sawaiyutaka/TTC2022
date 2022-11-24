@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import codecs
 import japanize_matplotlib
 import matplotlib.pyplot as plt
 import seaborn as s
@@ -17,7 +16,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 import warnings
 
 TRIAL = 1000  # ランダム化を何回するか
-FEATURE = "AB105"  # 調べたい項目
+FEATURE = "AA205_Imp"  # 調べたい項目
 warnings.filterwarnings('ignore')
 """
 # 現在の最大表示列数の出力
@@ -135,6 +134,7 @@ shap_random = pd.DataFrame(ls, columns=['shap_value'])
 shap_random['color'] = 0
 
 df4plot = pd.concat([shap_random, true_shap])
+df4plot["shap_value"] = np.sqrt(df4plot["shap_value"])
 
 s.displot(data=df4plot, x='shap_value', hue='color', multiple='stack')
 plt.savefig("/Volumes/Pegasus32R8/TTC/202211/trial_1000vs1000.svg")
