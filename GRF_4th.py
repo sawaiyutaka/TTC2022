@@ -8,6 +8,7 @@ from econml.dml import CausalForestDML
 
 # imputeした後のデータフレーム、PLEとAQの合計得点前
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed.csv", delimiter=",")
+df = df.set_index("SAMPLENUMBER")
 print(df)
 
 """
@@ -30,7 +31,7 @@ print("第4回PLE合計\n", df_Y["PLE_sum"])
 df_AQ = df.filter(regex='^(BB12|BB13)', axis=1)
 df_AQ["AQ_sum"] = df_AQ.sum(axis=1)
 print("第2回AQ合計\n", df_AQ["AQ_sum"])
-df_AQ = df_AQ.reset_index()
+# df_AQ = df_AQ.reset_index()
 
 df = pd.concat([df, df_Y], axis=1, join='inner')
 print("PLE合計点を追加した\n", df.head())
@@ -56,7 +57,7 @@ X = X.drop(["DD64_1", "DD65_1", "DD66_1", "DD67_1", "DD68_1", "DD69_1", "DD70_1"
 X = X.drop(["BB39", "BB56", "BB57", "BB73", "BB83", "BB95", "BB96", "BB116", "OCS_sum", "OCS_0or1"], axis=1)
 
 # 第２期のAQを除外
-X = X.drop(["BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132", "index"], axis=1)
+X = X.drop(["BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132"], axis=1)
 
 print(X)
 # 第1期の強迫を除外

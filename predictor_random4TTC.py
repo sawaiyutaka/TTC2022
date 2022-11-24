@@ -26,13 +26,14 @@ pd.get_option("display.max_columns")
 pd.set_option('display.max_columns', 500)
 """
 df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_4th.csv", delimiter=",")
+df = df.set_index("SAMPLENUMBER")
 print(df.head(10))
 
 shap.initjs()  # いくつかの可視化で必要
 
 # 特徴量 X、アウトカム y
 y = df["te_pred"]
-X = df.drop(["te_pred", "Unnamed: 0", "SAMPLENUMBER"], axis=1)
+X = df.drop(["te_pred", "Unnamed: 0"], axis=1)
 print(X.head())
 print(y)
 

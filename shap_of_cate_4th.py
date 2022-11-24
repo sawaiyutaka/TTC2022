@@ -17,12 +17,13 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 
 # 特徴量 X、アウトカム y
 df = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_4th.csv", delimiter=",")
+df = df.set_index("SAMPLENUMBER")
 print(df.head())
 y = df["te_pred"]
 print(y)
 
 X = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv", delimiter=",")
-X = X.drop(["Unnamed: 0", "SAMPLENUMBER"], axis=1)
+X = X.drop(["Unnamed: 0"], axis=1)
 print(X.head())
 
 Y_train, Y_val, X_train, X_val = train_test_split(y, X, test_size=.2)
