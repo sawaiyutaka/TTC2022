@@ -52,7 +52,7 @@ for i in range(TRIAL):
 
     # 学習済みモデルの評価
     predicted_Y_val = model.predict(X_val)
-    print("model_score: ", model.score(X_val, Y_val))
+    print("ランダム化前のmodel_score: ", model.score(X_val, Y_val))
 
     # shap valueで評価
 
@@ -98,8 +98,8 @@ for i in range(TRIAL):
     model.fit(X_train, Y_train)
 
     # 学習済みモデルの評価
-    # predicted_Y_val = model.predict(X_val)
-    # print("model_score: ", model.score(X_val, Y_val))
+    predicted_Y_val = model.predict(X_val)
+    print("ランダム化後のmodel_score: ", model.score(X_val, Y_val))
 
     # shap valueで評価
     """
