@@ -160,9 +160,9 @@ print("df_lower\n", df_lower.describe())
 df_lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_3rd.csv")
 
 # CATE(全体)
+# s.set()
 s.displot(te_pred)
 plt.savefig("/Volumes/Pegasus32R8/TTC/202211/cate_3rd.svg")
-s.set()
 # plt.show()
 
 '''
