@@ -180,7 +180,7 @@ plt.show()
 
 # https://towardsdatascience.com/causal-machine-learning-for-econometrics-causal-forests-5ab3aec825a7
 # ★['Y0']['T0']問題！
-
+plt.figure()
 # calculate shap values of causal forest model
 shap_values = causal_forest.shap_values(X)
 # plot shap values

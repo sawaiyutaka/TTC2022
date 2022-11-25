@@ -179,7 +179,7 @@ plt.show()
 # fit causal forest with default parameters
 # causal_forest = CausalForestDML()
 # causal_forest.fit(Y, T, X=X, W=W)
-
+plt.figure()
 # calculate shap values of causal forest model
 shap_values = causal_forest.shap_values(X)
 # plot shap values
