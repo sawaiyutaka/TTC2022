@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LassoCV
 from sklearn.model_selection import train_test_split
 from econml.dml import CausalForestDML
+import shap
 
 # imputeした後のデータフレーム、PLEとAQの合計得点前
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed.csv", delimiter=",")
@@ -162,7 +163,7 @@ df_lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_4th.csv"
 s.set()
 s.displot(te_pred)
 plt.savefig("/Volumes/Pegasus32R8/TTC/202211/cate_4th.svg")
-plt.show()
+# plt.show()
 
 '''
 # CATE(前半)
@@ -174,19 +175,15 @@ s.displot(te_pred_test2)
 plt.show()
 '''
 
-'''
+
 # https://towardsdatascience.com/causal-machine-learning-for-econometrics-causal-forests-5ab3aec825a7
 # ★['Y0']['T0']問題！
-# fit causal forest with default parameters
-causal_forest = CausalForestDML()
-causal_forest.fit(Y, T, X=X, W=W)
 
 # calculate shap values of causal forest model
 shap_values = causal_forest.shap_values(X)
 # plot shap values
-# shap.summary_plot(shap_values['Y0']['T0'])
-# shap.summary_plot(shap_values, X)ではダメ
-'''
+shap.summary_plot(shap_values['PLE_sum']['OCS_0or1'])
+
 
 # Note that the structure of this estimator is based on the BaseEstimator and RegressorMixin from sklearn; however,
 # here we predict treatment effects –which are unobservable– hence regular model validation and model selection
