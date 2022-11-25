@@ -41,7 +41,7 @@ model = RandomForestRegressor(
     # n_jobs=8,  # number of jobs to run in parallel(-1 means using all processors)
     random_state=42)
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
-
+# model_score:  0.73
 model.fit(X_train, Y_train)
 
 # 学習済みモデルの評価
@@ -62,12 +62,12 @@ shap.plots.beeswarm(shap_values, max_display=14)
 # ハイパーパラメータをチューニング
 search_params = {
     'n_estimators': [500, 1000, 2000],
-    'max_features': [i for i in range(100, X_train.shape[1], 50)],
+    'max_features': [i for i in range(1, X_train.shape[1], 50)],
     'random_state': [2525],
     'min_samples_split': [2, 5, 10, 20],
     'min_samples_leaf': [1, 5, 10, 20]
     # 'max_depth': [20, 30, 40]
-    # Best model score 0.57(max_features=200, n_estimators=2000, random_state=2525)
+    # Best model score 0.73(max_features=200, n_estimators=2000, random_state=2525)
 }
 
 # グリッドサーチ

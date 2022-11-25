@@ -33,12 +33,12 @@ Y_train, Y_val, X_train, X_val = train_test_split(y, X, test_size=.2)
 # 教師データと教師ラベルを使い、fitメソッドでモデルを学習
 model = RandomForestRegressor(
     max_depth=None,
-    max_features=200,  # X_train.shape[1],  # The number of features to consider when looking for the best split
+    max_features=250,  # X_train.shape[1],  # The number of features to consider when looking for the best split
     # 'sqrt'も可能
     min_samples_split=2,
     min_samples_leaf=1,
     n_estimators=2000,
-    # n_jobs=8,  # number of jobs to run in parallel(-1 means using all processors)
+    n_jobs=16,  # number of jobs to run in parallel(-1 means using all processors)
     random_state=42)
 # https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
 
@@ -47,6 +47,7 @@ model.fit(X_train, Y_train)
 # 学習済みモデルの評価
 predicted_Y_val = model.predict(X_val)
 print("model_score: ", model.score(X_val, Y_val))
+
 
 # shap valueで評価（時間がかかる）
 # Fits the explainer
@@ -62,10 +63,10 @@ shap.plots.beeswarm(shap_values, max_display=13)
 # ハイパーパラメータをチューニング
 search_params = {
     'n_estimators': [500, 1000, 2000],
-    'max_features': [i for i in range(100, X_train.shape[1], 50)],
+    'max_features': [i for i in range(1, X_train.shape[1], 50)],
     'random_state': [2525],
-    'min_samples_split': [2, 5, 10, 20],
-    'min_samples_leaf': [1, 5, 10, 20]
+    # 'min_samples_split': [2, 5, 10, 20],
+    # 'min_samples_leaf': [1, 5, 10, 20]
     # 'max_depth': [20, 30, 40]
     # Best model score 0.57(max_features=200, n_estimators=2000, random_state=2525)
 }
