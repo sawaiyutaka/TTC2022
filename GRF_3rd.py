@@ -3,9 +3,10 @@ import numpy as np
 import seaborn as s
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LassoCV
-from sklearn.model_selection import train_test_split
 from econml.dml import CausalForestDML
 import shap
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split, GridSearchCV
 
 # imputeした後のデータフレーム、PLEとAQの合計得点前
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed.csv", delimiter=",")
@@ -17,7 +18,6 @@ df_Y = df[["CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1",
 print("df_Y\n", df_Y)
 df_Y["PLE_sum"] = df_Y.sum(axis=1)
 print("第3回PLE合計\n", df_Y["PLE_sum"])
-# df_Y = df_Y.reset_index()
 
 """
 # PLEの合計点を作成(第4期)
@@ -25,14 +25,12 @@ df_Y = df[["DD64_1", "DD65_1", "DD66_1", "DD67_1", "DD68_1", "DD69_1", "DD70_1",
 print("df_Y\n", df_Y)
 df_Y["PLE_sum"] = df_Y.sum(axis=1)
 print("第4回PLE合計\n", df_Y["PLE_sum"])
-# df_Y = df_Y.reset_index()
 """
 
 # AQの合計点を作成
 df_AQ = df.filter(regex='^(BB12|BB13)', axis=1)
 df_AQ["AQ_sum"] = df_AQ.sum(axis=1)
 print("第2回AQ合計\n", df_AQ)
-# df_AQ = df_AQ.reset_index()
 
 df = pd.concat([df, df_Y], axis=1, join='inner')
 print("PLE合計点を追加した\n", df.head())
@@ -49,7 +47,8 @@ print("Y\n", Y)
 T = df['OCS_0or1']  # 強迫CMCL5点以上であることをtreatmentとする
 
 # 第3期のPLEを除外
-X = df.drop(["PLE_sum", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"], axis=1)
+X = df.drop(["PLE_sum", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"],
+            axis=1)
 
 # 第4期のPLEを除外
 X = X.drop(["DD64_1", "DD65_1", "DD66_1", "DD67_1", "DD68_1", "DD69_1", "DD70_1", "DD71_1", "DD72_1"], axis=1)
@@ -84,17 +83,6 @@ n_treatments = 1
 Y_train, Y_val, T_train, T_val, X_train, X_val = train_test_split(Y, T, X, test_size=.2)
 W = None
 
-"""
-est = CausalForestDML(model_y=RandomForestRegressor(),
-                      model_t=RandomForestRegressor(),
-                      criterion='mse',
-                      n_estimators=1000,
-                      max_depth=40,
-                      min_samples_split=20,
-                      min_impurity_decrease=0.001,
-                      random_state=42)
-"""
-
 causal_forest = CausalForestDML(criterion='het',
                                 n_estimators=10000,
                                 min_samples_leaf=10,
@@ -104,15 +92,26 @@ causal_forest = CausalForestDML(criterion='het',
                                 honest=True,
                                 inference=True,
                                 cv=10,
-                                model_t=LassoCV(),
-                                model_y=LassoCV(),
-                                random_state=2525)
+                                model_t=LassoCV(max_iter=100000),  # first_stage; cross-validated models
+                                # that automatically choose the hyperparameters
+                                model_y=LassoCV(max_iter=100000),
+                                random_state=2525,
+                                n_jobs=16)
+
+# https://3pysci.com/python-sklearn-21/
+# Lassoモデルでは内部で何度も学習を行い、各パラメータの調整をする
+# max_iter: 学習の試行の最大数。この試行数かtolで指定した値よりもスコアの向上値が小さくなるのが続いたら、学習が終了する。
+# int値（整数）、デフォルト値は1000
+#
+# tol: 学習のスコアが収束したか判断するための値。この値よりもスコアの向上値が小さくなるのが続いた際、学習が終了する。
+# float値（小数）、デフォルト値は1e-4
+
 
 # fit train data to causal forest model
 causal_forest.fit(Y, T, X=X, W=W)
 
 # estimate the CATE with the test set
-causal_forest.const_marginal_ate(X_train)
+print("Calculate the average constant marginal CATE\n", causal_forest.const_marginal_ate(X))
 
 '''
 # 半分に分割してテスト
@@ -125,8 +124,8 @@ print("X_test1: \n", X_test1)
 print("X_test2: \n", X_test2)
 '''
 # X全体でCATEを計算
-te_pred = causal_forest.effect(X)
-lb, ub = causal_forest.effect_interval(X, alpha=0.05)
+te_pred = causal_forest.effect(X)  # Calculate the heterogeneous treatment effect
+lb, ub = causal_forest.effect_interval(X, alpha=0.05)  # Confidence intervals for the quantities
 
 '''
 # X_testのみでCATEを計算
@@ -176,7 +175,6 @@ s.displot(te_pred_test2)
 plt.show()
 '''
 
-
 # https://towardsdatascience.com/causal-machine-learning-for-econometrics-causal-forests-5ab3aec825a7
 # fit causal forest with default parameters
 # causal_forest = CausalForestDML()
@@ -186,8 +184,6 @@ plt.show()
 shap_values = causal_forest.shap_values(X)
 # plot shap values
 shap.summary_plot(shap_values['PLE_sum']['OCS_0or1'])
-
-
 
 # Note that the structure of this estimator is based on the BaseEstimator and RegressorMixin from sklearn; however,
 # here we predict treatment effects –which are unobservable– hence regular model validation and model selection

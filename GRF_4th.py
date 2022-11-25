@@ -104,9 +104,10 @@ causal_forest = CausalForestDML(criterion='het',
                                 honest=True,
                                 inference=True,
                                 cv=10,
-                                model_t=LassoCV(),
-                                model_y=LassoCV(),
-                                random_state=2525)
+                                model_t=LassoCV(max_iter=100000),
+                                model_y=LassoCV(max_iter=100000),
+                                random_state=2525,
+                                n_jobs=10)
 
 # fit train data to causal forest model
 causal_forest.fit(Y, T, X=X, W=W)
@@ -126,6 +127,7 @@ print("X_test2: \n", X_test2)
 '''
 # X全体でCATEを計算
 te_pred = causal_forest.effect(X)
+# lb, ub = causal_forest.effect_interval(X, alpha=0.05)
 
 '''
 # X_testのみでCATEを計算
