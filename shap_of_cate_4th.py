@@ -23,7 +23,8 @@ y = df["te_pred"]
 print(y)
 
 X = pd.read_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv", delimiter=",")
-X = X.drop(["Unnamed: 0"], axis=1)
+# X = X.drop(["Unnamed: 0"], axis=1)
+X = X.set_index("SAMPLENUMBER")
 print(X.head())
 
 Y_train, Y_val, X_train, X_val = train_test_split(y, X, test_size=.2)
