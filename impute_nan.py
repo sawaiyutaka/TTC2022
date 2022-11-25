@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 from missingpy import MissForest
+import sys
+import sklearn.neighbors._base
 
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf.csv", delimiter=",")
 # df = df.drop(["Unnamed: 0"], axis=1)
@@ -10,6 +12,9 @@ print(df.head())
 numeric_columns = [colname for colname in df.columns if df[colname].dtype == float]  # 数値のみ抽出
 df = df[numeric_columns]
 print(df.head())
+
+# sklearnのバージョンによって、.baseが_.base となったことによるエラーに対処
+sys.modules['sklearn.neighbors.base'] = sklearn.neighbors._base
 
 # Make an instance and perform the imputation
 imputer = MissForest(max_iter=10, decreasing=False, missing_values=np.nan,
