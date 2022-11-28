@@ -10,6 +10,6 @@
 
 5 GRF.py
 
-6 shap_of_cate.py
+6 (中止)shap_of_cate.py
 
-7 predictor_random4TTC
+7 (中止)predictor_random4TTC
