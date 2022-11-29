@@ -24,13 +24,16 @@
 5 GRF_3rd.py, GRF_4th.py(順不同)
 
 　一般化ランダムフォレストによるtreatment effectの計算
-　（第2期で強迫症状がない場合と、強迫症状がある場合で、PLEのスコアがどれだけ異なるか推定）
+
+（第2期で強迫症状がない場合と、強迫症状がある場合で、PLEのスコアがどれだけ異なるか推定）
+ 
 　treatment effectの予測に関わった共変量（第1期のデータ）を示す：shap valueを使用
 
 
 6 (中止)shap_of_cate.py
 
 　treatment effectと第1期データを結合して、
+
 　treatment effectの予測に関わった共変量（第1期のデータ）を示す：shap valueを使用
 
 
