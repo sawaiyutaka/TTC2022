@@ -113,8 +113,10 @@ causal_forest = CausalForestDML(criterion='het',
 causal_forest.fit(Y, T, X=X, W=W)
 
 # estimate the CATE with the test set
-causal_forest.const_marginal_ate(X_train)
-
+print("Calculate the average constant marginal CATE\n", causal_forest.const_marginal_ate(X_train))
+lb, ub = causal_forest.const_marginal_effect_interval(X, alpha=0.05)
+print("ATE上限:", ub)
+print("ATE下限:", lb)
 '''
 # 半分に分割してテスト
 # test1
@@ -125,9 +127,9 @@ X_test2 = X.iloc[int(n_samples / 2):n_samples, :]
 print("X_test1: \n", X_test1)
 print("X_test2: \n", X_test2)
 '''
-# X全体でCATEを計算
-te_pred = causal_forest.effect(X)
-# lb, ub = causal_forest.effect_interval(X, alpha=0.05)
+# treatment effectを計算
+te_pred = causal_forest.effect(X, T0=0, T1=1)
+# lb, ub = causal_forest.effect_interval(X, T0=0, T1=1, alpha=0.05)
 
 '''
 # X_testのみでCATEを計算

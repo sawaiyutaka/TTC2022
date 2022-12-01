@@ -112,6 +112,9 @@ causal_forest.fit(Y, T, X=X, W=W)
 
 # estimate the CATE with the test set
 print("Calculate the average constant marginal CATE\n", causal_forest.const_marginal_ate(X))
+lb, ub = causal_forest.const_marginal_effect_interval(X, alpha=0.05)
+print("ATE上限:", ub)
+print("ATE下限:", lb)
 
 '''
 # 半分に分割してテスト
@@ -124,8 +127,8 @@ print("X_test1: \n", X_test1)
 print("X_test2: \n", X_test2)
 '''
 # X全体でCATEを計算
-te_pred = causal_forest.effect(X)  # Calculate the heterogeneous treatment effect
-lb, ub = causal_forest.effect_interval(X, alpha=0.05)  # Confidence intervals for the quantities
+te_pred = causal_forest.effect(X, T0=0, T1=1)  # Calculate the heterogeneous treatment effect
+# lb, ub = causal_forest.effect_interval(X, T0=0, T1=1, alpha=0.05)  # Confidence intervals for the quantities
 
 '''
 # X_testのみでCATEを計算
