@@ -110,9 +110,12 @@ causal_forest = CausalForestDML(criterion='het',
 # fit train data to causal forest model
 causal_forest.fit(Y, T, X=X, W=W)
 
-# estimate the CATE with the test set
+# Tが0→1になった時のYの変化量を予測
 print("Calculate the average constant marginal CATE\n", causal_forest.const_marginal_ate(X))
-lb, ub = causal_forest.const_marginal_effect_interval(X, alpha=0.05)
+
+# ATEを計算
+print("Calculate the average treatment effect", causal_forest.ate(X, T0=0, T1=1))
+lb, ub = causal_forest.ate_interval(X, alpha=0.05)
 print("ATE上限:", ub)
 print("ATE下限:", lb)
 
