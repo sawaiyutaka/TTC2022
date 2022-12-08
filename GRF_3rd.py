@@ -3,10 +3,9 @@ import numpy as np
 import seaborn as s
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LassoCV
+from sklearn.model_selection import train_test_split
 from econml.dml import CausalForestDML
 import shap
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split, GridSearchCV
 
 # imputeした後のデータフレーム、PLEとAQの合計得点前
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed.csv", delimiter=",")
@@ -30,7 +29,8 @@ print("第4回PLE合計\n", df_Y["PLE_sum"])
 # AQの合計点を作成
 df_AQ = df.filter(regex='^(BB12|BB13)', axis=1)
 df_AQ["AQ_sum"] = df_AQ.sum(axis=1)
-print("第2回AQ合計\n", df_AQ)
+print("第2回AQ合計\n", df_AQ["AQ_sum"])
+# df_AQ = df_AQ.reset_index()
 
 df = pd.concat([df, df_Y], axis=1, join='inner')
 print("PLE合計点を追加した\n", df.head())
@@ -47,8 +47,7 @@ print("Y\n", Y)
 T = df['OCS_0or1']  # 強迫CMCL5点以上であることをtreatmentとする
 
 # 第3期のPLEを除外
-X = df.drop(["PLE_sum", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"],
-            axis=1)
+X = df.drop(["PLE_sum", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"], axis=1)
 
 # 第4期のPLEを除外
 X = X.drop(["DD64_1", "DD65_1", "DD66_1", "DD67_1", "DD68_1", "DD69_1", "DD70_1", "DD71_1", "DD72_1"], axis=1)
@@ -66,7 +65,7 @@ X = X.drop(["AD57", "AD58", "AD59", "AD60", "AD61", "AD62"], axis=1)
 
 X = X.loc[:, ~X.columns.duplicated()]
 print("重複を削除\n", X)
-# X.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv")
+X.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv")
 
 
 # 第1期の強迫、PLEを除外したXを読み込み
@@ -83,7 +82,18 @@ n_treatments = 1
 Y_train, Y_val, T_train, T_val, X_train, X_val = train_test_split(Y, T, X, test_size=.2)
 W = None
 
-causal_forest = CausalForestDML(criterion='het',
+"""
+est = CausalForestDML(model_y=RandomForestRegressor(),
+                      model_t=RandomForestRegressor(),
+                      criterion='mse',
+                      n_estimators=1000,
+                      max_depth=40,
+                      min_samples_split=20,
+                      min_impurity_decrease=0.001,
+                      random_state=42)
+"""
+
+est = CausalForestDML(criterion='het',
                                 n_estimators=10000,
                                 min_samples_leaf=10,
                                 max_depth=None,
@@ -92,33 +102,26 @@ causal_forest = CausalForestDML(criterion='het',
                                 honest=True,
                                 inference=True,
                                 cv=10,
-                                model_t=LassoCV(max_iter=100000),  # first_stage; cross-validated models
-                                # that automatically choose the hyperparameters
+                                model_t=LassoCV(max_iter=100000),
                                 model_y=LassoCV(max_iter=100000),
                                 random_state=2525,
-                                n_jobs=16)
-
-# https://3pysci.com/python-sklearn-21/
-# Lassoモデルでは内部で何度も学習を行い、各パラメータの調整をする
-# max_iter: 学習の試行の最大数。この試行数かtolで指定した値よりもスコアの向上値が小さくなるのが続いたら、学習が終了する。
-# int値（整数）、デフォルト値は1000
-#
-# tol: 学習のスコアが収束したか判断するための値。この値よりもスコアの向上値が小さくなるのが続いた際、学習が終了する。
-# float値（小数）、デフォルト値は1e-4
-
+                                n_jobs=10)
 
 # fit train data to causal forest model
-causal_forest.fit(Y, T, X=X, W=W)
+est.fit(Y, T, X=X, W=W)
 
 # Tが0→1になった時のYの変化量を予測
-print("Calculate the average constant marginal CATE\n", causal_forest.const_marginal_ate(X))
+print("Calculate the average constant marginal CATE\n", est.const_marginal_ate(X))
 
 # ATEを計算
-print("Calculate the average treatment effect", causal_forest.ate(X, T0=0, T1=1))
-lb, ub = causal_forest.ate_interval(X, alpha=0.05)
-print("ATE上限:", ub)
-print("ATE下限:", lb)
+print("Calculate the average treatment effect", est.ate(X, T0=0, T1=1))
+lb0, ub0 = est.ate_interval(X, alpha=0.05)
+print("ATE上限:", ub0)
+print("ATE下限:", lb0)
 
+# feature importance
+print("共変量\n", X.columns.values)
+print("feature importance\n", est.feature_importances_)
 '''
 # 半分に分割してテスト
 # test1
@@ -129,14 +132,44 @@ X_test2 = X.iloc[int(n_samples / 2):n_samples, :]
 print("X_test1: \n", X_test1)
 print("X_test2: \n", X_test2)
 '''
-# X全体でCATEを計算
-te_pred = causal_forest.effect(X, T0=0, T1=1)  # Calculate the heterogeneous treatment effect
-# lb, ub = causal_forest.effect_interval(X, T0=0, T1=1, alpha=0.05)  # Confidence intervals for the quantities
+# treatment effectを計算
+te_pred = est.effect(X, T0=0, T1=1)
+lb, ub = est.effect_interval(X, T0=0, T1=1, alpha=0.05)
+
+# convert arrays to pandas dataframes for plotting
+te_df = pd.DataFrame(te_pred, columns=['cate'])
+lb_df = pd.DataFrame(lb, columns=['lb'])
+ub_df = pd.DataFrame(ub, columns=['ub'])
+
+print(te_df)
+
+# merge dataframes and sort
+df = pd.concat([te_df, lb_df, ub_df], axis=1)
+df.sort_values('cate', inplace=True, ascending=True)
+df.reset_index(inplace=True, drop=True)
+
+# calculate rolling mean
+z = df.rolling(window=30, center=True).mean()
+
+# set plot size
+fig, ax = plt.subplots(figsize=(12, 8))
+# plot lines for treatment effects and confidence intervals
+ax.plot(z['cate'],
+        marker='.', linestyle='-', linewidth=0.5, label='CATE', color='indigo')
+ax.plot(z['lb'],
+        marker='.', linestyle='-', linewidth=0.5, color='steelblue')
+ax.plot(z['ub'],
+        marker='.', linestyle='-', linewidth=0.5, color='steelblue')
+# label axes and create legend
+ax.set_ylabel('Treatment Effects')
+ax.set_xlabel('Number of observations')
+ax.legend()
+plt.show()
 
 '''
 # X_testのみでCATEを計算
-te_pred_test1 = causal_forest.effect(X_test1)
-te_pred_test2 = causal_forest.effect(X_test2)
+te_pred_test1 = est.effect(X_test1)
+te_pred_test2 = est.effect(X_test2)
 '''
 
 print("te_pred: \n", te_pred)
@@ -144,7 +177,7 @@ print("要素数", len(te_pred))
 # 各CATEの値のXの要素を示す
 df_new = X.assign(te_pred=te_pred)
 print("CATEを追加\n", df_new)
-df_new.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_3rd.csv")
+df_new.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_4th.csv")
 
 # CATEの推定結果を確認
 print("CATE of CausalForest: ", round(np.mean(te_pred), 2))
@@ -160,15 +193,15 @@ print("upper＝影響を受けやすかった10%: \n", df_upper)
 print("lower＝影響を受けにくかった10%: \n", df_lower)
 
 print("df_upper\n", df_upper.describe())
-df_upper.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_upper_3rd.csv")
+df_upper.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_upper_4th.csv")
 
 print("df_lower\n", df_lower.describe())
-df_lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_3rd.csv")
+df_lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_4th.csv")
 
 # CATE(全体)
 # s.set()
-s.displot(te_pred)
-plt.savefig("/Volumes/Pegasus32R8/TTC/202211/cate_3rd.svg")
+# s.displot(te_pred)
+# plt.savefig("/Volumes/Pegasus32R8/TTC/202211/cate_4th.svg")
 # plt.show()
 
 '''
@@ -182,12 +215,10 @@ plt.show()
 '''
 
 # https://towardsdatascience.com/causal-machine-learning-for-econometrics-causal-forests-5ab3aec825a7
-# fit causal forest with default parameters
-# causal_forest = CausalForestDML()
-# causal_forest.fit(Y, T, X=X, W=W)
+# ★['Y0']['T0']問題！
 plt.figure()
 # calculate shap values of causal forest model
-shap_values = causal_forest.shap_values(X)
+shap_values = est.shap_values(X)
 # plot shap values
 shap.summary_plot(shap_values['PLE_sum']['OCS_0or1'])
 
@@ -195,3 +226,4 @@ shap.summary_plot(shap_values['PLE_sum']['OCS_0or1'])
 # here we predict treatment effects –which are unobservable– hence regular model validation and model selection
 # techniques (e.g. cross validation grid search) do not work as we can never estimate a loss on a training sample,
 # thus a tighter integration into the sklearn workflow is unlikely for now.
+
