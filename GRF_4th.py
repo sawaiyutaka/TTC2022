@@ -95,7 +95,7 @@ est = CausalForestDML(model_y=RandomForestRegressor(),
                       random_state=42)
 """
 
-causal_forest = CausalForestDML(criterion='het',
+est = CausalForestDML(criterion='het',
                                 n_estimators=10000,
                                 min_samples_leaf=10,
                                 max_depth=None,
@@ -110,19 +110,20 @@ causal_forest = CausalForestDML(criterion='het',
                                 n_jobs=10)
 
 # fit train data to causal forest model
-causal_forest.fit(Y, T, X=X, W=W)
+est.fit(Y, T, X=X, W=W)
 
 # Tが0→1になった時のYの変化量を予測
-print("Calculate the average constant marginal CATE\n", causal_forest.const_marginal_ate(X))
+print("Calculate the average constant marginal CATE\n", est.const_marginal_ate(X))
 
 # ATEを計算
-print("Calculate the average treatment effect", causal_forest.ate(X, T0=0, T1=1))
-lb0, ub0 = causal_forest.ate_interval(X, alpha=0.05)
+print("Calculate the average treatment effect", est.ate(X, T0=0, T1=1))
+lb0, ub0 = est.ate_interval(X, alpha=0.05)
 print("ATE上限:", ub0)
 print("ATE下限:", lb0)
 
-print("feature importance\n", causal_forest.feature_importances_)
-
+# feature importance
+print("共変量\n", X.columns.values)
+print("feature importance\n", est.feature_importances_)
 '''
 # 半分に分割してテスト
 # test1
@@ -134,8 +135,8 @@ print("X_test1: \n", X_test1)
 print("X_test2: \n", X_test2)
 '''
 # treatment effectを計算
-te_pred = causal_forest.effect(X, T0=0, T1=1)
-lb, ub = causal_forest.effect_interval(X, T0=0, T1=1, alpha=0.05)
+te_pred = est.effect(X, T0=0, T1=1)
+lb, ub = est.effect_interval(X, T0=0, T1=1, alpha=0.05)
 
 # convert arrays to pandas dataframes for plotting
 te_df = pd.DataFrame(te_pred, columns=['cate'])
@@ -169,8 +170,8 @@ plt.show()
 
 '''
 # X_testのみでCATEを計算
-te_pred_test1 = causal_forest.effect(X_test1)
-te_pred_test2 = causal_forest.effect(X_test2)
+te_pred_test1 = est.effect(X_test1)
+te_pred_test2 = est.effect(X_test2)
 '''
 
 print("te_pred: \n", te_pred)
@@ -219,7 +220,7 @@ plt.show()
 # ★['Y0']['T0']問題！
 plt.figure()
 # calculate shap values of causal forest model
-shap_values = causal_forest.shap_values(X)
+shap_values = est.shap_values(X)
 # plot shap values
 shap.summary_plot(shap_values['PLE_sum']['OCS_0or1'])
 
