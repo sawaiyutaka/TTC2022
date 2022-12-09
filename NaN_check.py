@@ -35,3 +35,7 @@ df.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/columns_NAN_under_" + str(NU
 name_columns = pd.DataFrame(sr, columns=["num_of_NaN"])
 print(name_columns)
 
+print("NaN個数\n", df.isnull().sum(axis=1))
+sr2 = df.isnull().sum(axis=1)/len(df.columns)*100
+s.displot(sr2)
+plt.show()

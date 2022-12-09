@@ -90,6 +90,7 @@ print(df.head())
 # 1回目調査でPLEなしを抽出したい
 df_PLE = df[["AD57", "AD58", "AD59", "AD60", "AD61", "AD62", "AD63"]]
 print("df_PLE\n", df_PLE)
+print("NaN個数\n", df_PLE.isnull().sum(axis=0))
 ple_1st_pos = (df_PLE != 1.0)
 print("'Yes, definitely'でないところをTRUE\n", ple_1st_pos)
 # print("1回目調査でPLEが「Yes, definitely」\n", ple_1st_pos.sum())
@@ -104,12 +105,13 @@ print("1回目調査でPLEなし\n", ple_neg)
 
 ple_neg_oc = pd.merge(ple_neg, oc_2nd, left_index=True, right_index=True)  # 第１期にpleなしのうち、OCにNaNなし
 print("第１期にpleなしのうち、OCにNaNなし\n", ple_neg_oc)
+print("NaN個数\n", ple_neg_oc.isnull().sum(axis=0))  # 対象者に第1期でPLEが欠損値の人はいない
 
 cols_to_use = df.columns.difference(ple_neg_oc.columns)
 print("第１期量的データにあって、PLEやOCSに含まれない項目を検出\n", cols_to_use)
 df4grf = ple_neg_oc.join([df[cols_to_use], base_1st, aq_2nd, ple_3rd, ple_4th], how='inner')
 print("set_indexがなされているか？\n", df4grf)
-df4grf.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf.csv")  # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
+# df4grf.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf.csv")  # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
 
 print("NaN個数\n", df4grf["OCS_0or1"].isnull().sum())
 print("OCSあり\n", df4grf["OCS_0or1"].sum())

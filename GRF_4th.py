@@ -12,6 +12,11 @@ df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed.cs
 df = df.set_index("SAMPLENUMBER")
 print(df)
 
+df1 = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/pet_kind.csv", delimiter=",")
+df1 = df1.set_index("SAMPLENUMBER")
+print(df1.head())
+df = pd.merge(df, df1, left_index=True, right_index=True)
+
 """
 # PLEの合計点を作成(第3期)
 df_Y = df[["CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"]]
@@ -95,7 +100,7 @@ est = CausalForestDML(model_y=RandomForestRegressor(),
                       random_state=42)
 """
 
-causal_forest = CausalForestDML(criterion='het',
+est = CausalForestDML(criterion='het',
                                 n_estimators=10000,
                                 min_samples_leaf=10,
                                 max_depth=None,
@@ -110,16 +115,36 @@ causal_forest = CausalForestDML(criterion='het',
                                 n_jobs=10)
 
 # fit train data to causal forest model
-causal_forest.fit(Y, T, X=X, W=W)
+est.fit(Y, T, X=X, W=W)
 
 # Tが0→1になった時のYの変化量を予測
-print("Calculate the average constant marginal CATE\n", causal_forest.const_marginal_ate(X))
+print("Calculate the average constant marginal CATE\n", est.const_marginal_ate(X))
 
 # ATEを計算
-print("Calculate the average treatment effect", causal_forest.ate(X, T0=0, T1=1))
-lb, ub = causal_forest.ate_interval(X, alpha=0.05)
-print("ATE上限:", ub)
-print("ATE下限:", lb)
+print("Calculate the average treatment effect", est.ate(X, T0=0, T1=1))
+lb0, ub0 = est.ate_interval(X, alpha=0.05)
+print("ATE上限:", ub0)
+print("ATE下限:", lb0)
+
+# feature importance
+print("covariate\n", list(X.columns.values))
+covariate = list(X.columns.values)
+print("feature_importance\n", list(est.feature_importances_))
+feature_importance = list(est.feature_importances_)
+
+print([covariate, feature_importance])
+
+lst = [covariate, feature_importance]
+df = pd.DataFrame(lst, index=['covariate', 'feature_importance'])
+df2 = df.T
+print(df2)
+
+# df2.to_csv("importance_4th.csv")
+
+df2.sort_values('feature_importance', inplace=True, ascending=False)
+print(df2)
+
+df2.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/importance_4th_sort.csv")
 '''
 # 半分に分割してテスト
 # test1
@@ -131,13 +156,43 @@ print("X_test1: \n", X_test1)
 print("X_test2: \n", X_test2)
 '''
 # treatment effectを計算
-te_pred = causal_forest.effect(X, T0=0, T1=1)
-# lb, ub = causal_forest.effect_interval(X, T0=0, T1=1, alpha=0.05)
+te_pred = est.effect(X, T0=0, T1=1)
+lb, ub = est.effect_interval(X, T0=0, T1=1, alpha=0.05)
+
+# convert arrays to pandas dataframes for plotting
+te_df = pd.DataFrame(te_pred, columns=['cate'])
+lb_df = pd.DataFrame(lb, columns=['lb'])
+ub_df = pd.DataFrame(ub, columns=['ub'])
+
+print(te_df)
+
+# merge dataframes and sort
+df = pd.concat([te_df, lb_df, ub_df], axis=1)
+df.sort_values('cate', inplace=True, ascending=True)
+df.reset_index(inplace=True, drop=True)
+
+# calculate rolling mean
+z = df.rolling(window=30, center=True).mean()
+
+# set plot size
+fig, ax = plt.subplots(figsize=(12, 8))
+# plot lines for treatment effects and confidence intervals
+ax.plot(z['cate'],
+        marker='.', linestyle='-', linewidth=0.5, label='CATE', color='indigo')
+ax.plot(z['lb'],
+        marker='.', linestyle='-', linewidth=0.5, color='steelblue')
+ax.plot(z['ub'],
+        marker='.', linestyle='-', linewidth=0.5, color='steelblue')
+# label axes and create legend
+ax.set_ylabel('Treatment Effects')
+ax.set_xlabel('Number of observations')
+ax.legend()
+plt.show()
 
 '''
 # X_testのみでCATEを計算
-te_pred_test1 = causal_forest.effect(X_test1)
-te_pred_test2 = causal_forest.effect(X_test2)
+te_pred_test1 = est.effect(X_test1)
+te_pred_test2 = est.effect(X_test2)
 '''
 
 print("te_pred: \n", te_pred)
@@ -168,8 +223,8 @@ df_lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_4th.csv"
 
 # CATE(全体)
 # s.set()
-s.displot(te_pred)
-plt.savefig("/Volumes/Pegasus32R8/TTC/202211/cate_4th.svg")
+# s.displot(te_pred)
+# plt.savefig("/Volumes/Pegasus32R8/TTC/202211/cate_4th.svg")
 # plt.show()
 
 '''
@@ -182,17 +237,17 @@ s.displot(te_pred_test2)
 plt.show()
 '''
 
-
 # https://towardsdatascience.com/causal-machine-learning-for-econometrics-causal-forests-5ab3aec825a7
 # ★['Y0']['T0']問題！
 plt.figure()
 # calculate shap values of causal forest model
-shap_values = causal_forest.shap_values(X)
+shap_values = est.shap_values(X)
 # plot shap values
-shap.summary_plot(shap_values['PLE_sum']['OCS_0or1'])
-
+plt.title("4th")
+shap.summary_plot(shap_values['PLE_sum']['OCS_0or1'], max_display=30, order=shap_values.abs.max(0))
 
 # Note that the structure of this estimator is based on the BaseEstimator and RegressorMixin from sklearn; however,
 # here we predict treatment effects –which are unobservable– hence regular model validation and model selection
 # techniques (e.g. cross validation grid search) do not work as we can never estimate a loss on a training sample,
 # thus a tighter integration into the sklearn workflow is unlikely for now.
+
