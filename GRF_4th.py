@@ -12,6 +12,11 @@ df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed.cs
 df = df.set_index("SAMPLENUMBER")
 print(df)
 
+df1 = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/pet_kind.csv", delimiter=",")
+df1 = df1.set_index("SAMPLENUMBER")
+print(df1.head())
+df = pd.merge(df, df1, left_index=True, right_index=True)
+
 """
 # PLEの合計点を作成(第3期)
 df_Y = df[["CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"]]
@@ -122,8 +127,24 @@ print("ATE上限:", ub0)
 print("ATE下限:", lb0)
 
 # feature importance
-print("共変量\n", X.columns.values)
-print("feature importance\n", est.feature_importances_)
+print("covariate\n", list(X.columns.values))
+covariate = list(X.columns.values)
+print("feature_importance\n", list(est.feature_importances_))
+feature_importance = list(est.feature_importances_)
+
+print([covariate, feature_importance])
+
+lst = [covariate, feature_importance]
+df = pd.DataFrame(lst, index=['covariate', 'feature_importance'])
+df2 = df.T
+print(df2)
+
+# df2.to_csv("importance_4th.csv")
+
+df2.sort_values('feature_importance', inplace=True, ascending=False)
+print(df2)
+
+df2.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/importance_4th_sort.csv")
 '''
 # 半分に分割してテスト
 # test1
@@ -222,7 +243,8 @@ plt.figure()
 # calculate shap values of causal forest model
 shap_values = est.shap_values(X)
 # plot shap values
-shap.summary_plot(shap_values['PLE_sum']['OCS_0or1'])
+plt.title("4th")
+shap.summary_plot(shap_values['PLE_sum']['OCS_0or1'], max_display=30, order=shap_values.abs.max(0))
 
 # Note that the structure of this estimator is based on the BaseEstimator and RegressorMixin from sklearn; however,
 # here we predict treatment effects –which are unobservable– hence regular model validation and model selection
