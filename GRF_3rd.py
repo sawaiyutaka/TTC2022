@@ -214,10 +214,10 @@ print("upper＝影響を受けやすかった10%: \n", df_upper)
 print("lower＝影響を受けにくかった10%: \n", df_lower)
 
 print("df_upper\n", df_upper.describe())
-df_upper.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_upper_4th.csv")
+df_upper.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_upper_3rd.csv")
 
 print("df_lower\n", df_lower.describe())
-df_lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_4th.csv")
+df_lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_3rd.csv")
 
 # CATE(全体)
 # s.set()
