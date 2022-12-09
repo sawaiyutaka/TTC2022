@@ -4,14 +4,20 @@ from missingpy import MissForest
 import sys
 import sklearn.neighbors._base
 
-df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf.csv", delimiter=",")
+df0 = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf.csv", delimiter=",")
 # df = df.drop(["Unnamed: 0"], axis=1)
-df = df.set_index("SAMPLENUMBER")
-print(df.head())
+df0 = df0.set_index("SAMPLENUMBER")
+print(df0.head())
 
-numeric_columns = [colname for colname in df.columns if df[colname].dtype == float]  # 数値のみ抽出
+df1 = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/pet_kind.csv", delimiter=",")
+df0 = df0.set_index("SAMPLENUMBER")
+df = pd.merge(df0, df1, left_index=True, right_index=True)
+
+"""
+numeric_columns = [colname for colname in df.columns if df[colname].dtype == float]  # 数値のみ抽出⇦整数を除外していた
 df = df[numeric_columns]
 print(df.head())
+"""
 
 # sklearnのバージョンによって、.baseが_.base となったことによるエラーに対処
 sys.modules['sklearn.neighbors.base'] = sklearn.neighbors._base
