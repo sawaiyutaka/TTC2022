@@ -10,8 +10,10 @@ df0 = df0.set_index("SAMPLENUMBER")
 print(df0.head())
 
 df1 = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/pet_kind.csv", delimiter=",")
-df0 = df0.set_index("SAMPLENUMBER")
+df1 = df1.set_index("SAMPLENUMBER")
+print(df1.head())
 df = pd.merge(df0, df1, left_index=True, right_index=True)
+print(df.head())
 
 """
 numeric_columns = [colname for colname in df.columns if df[colname].dtype == float]  # 数値のみ抽出⇦整数を除外していた
