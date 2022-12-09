@@ -12,10 +12,6 @@ df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed.cs
 df = df.set_index("SAMPLENUMBER")
 print(df)
 
-df1 = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/pet_kind.csv", delimiter=",")
-df1 = df1.set_index("SAMPLENUMBER")
-print(df1.head())
-df = pd.merge(df, df1, left_index=True, right_index=True)
 
 """
 # PLEの合計点を作成(第3期)

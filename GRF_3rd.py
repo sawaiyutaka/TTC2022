@@ -11,10 +11,6 @@ import shap
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed.csv", delimiter=",")
 df = df.set_index("SAMPLENUMBER")
 print(df)
-df1 = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/pet_kind.csv", delimiter=",")
-df1 = df1.set_index("SAMPLENUMBER")
-print(df1.head())
-df = pd.merge(df, df1, left_index=True, right_index=True)
 
 # PLEの合計点を作成(第3期)
 df_Y = df[["CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"]]
