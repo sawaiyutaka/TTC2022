@@ -3,7 +3,7 @@ import numpy as np
 import seaborn as s
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
-from sklearn.linear_model import LassoCV
+# from sklearn.linear_model import LassoCV
 from sklearn.model_selection import train_test_split
 from econml.dml import CausalForestDML
 import shap
@@ -52,7 +52,7 @@ X = df.drop(["AA1YEAR", "AA1MONTH", "AA1DAY", "AA1age"], axis=1)
 
 # 第3期のPLEを除外
 X = X.drop(["PLE_sum", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"],
-            axis=1)
+           axis=1)
 
 # 第4期のPLEを除外
 X = X.drop(["DD64_1", "DD65_1", "DD66_1", "DD67_1", "DD68_1", "DD69_1", "DD70_1", "DD71_1", "DD72_1"], axis=1)
@@ -109,7 +109,7 @@ est = CausalForestDML(criterion='mse',
                       model_t=RandomForestRegressor(),  # LassoCV(max_iter=100000),
                       model_y=RandomForestClassifier(),  # LassoCV(max_iter=100000),
                       random_state=2525,
-                      n_jobs=3)
+                      n_jobs=5)
 
 # fit train data to causal forest model
 est.fit(Y, T, X=X, W=W)
@@ -132,8 +132,8 @@ feature_importance = list(est.feature_importances_)
 print([covariate, feature_importance])
 
 lst = [covariate, feature_importance]
-df = pd.DataFrame(lst, index=['covariate', 'feature_importance'])
-df2 = df.T
+df1 = pd.DataFrame(lst, index=['covariate', 'feature_importance'])
+df2 = df1.T
 print(df2)
 
 # df2.to_csv("importance_3rd.csv")
@@ -165,12 +165,12 @@ ub_df = pd.DataFrame(ub, columns=['ub'])
 print(te_df)
 
 # merge dataframes and sort
-df = pd.concat([te_df, lb_df, ub_df], axis=1)
-df.sort_values('cate', inplace=True, ascending=True)
-df.reset_index(inplace=True, drop=True)
+df_plot = pd.concat([te_df, lb_df, ub_df], axis=1)
+df_plot.sort_values('cate', inplace=True, ascending=True)
+df_plot.reset_index(inplace=True, drop=True)
 
 # calculate rolling mean
-z = df.rolling(window=30, center=True).mean()
+z = df_plot.rolling(window=30, center=True).mean()
 
 # set plot size
 fig, ax = plt.subplots(figsize=(12, 8))
