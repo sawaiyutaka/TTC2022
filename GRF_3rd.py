@@ -22,6 +22,7 @@ T = df['OCS_0or1']  # 強迫CMCL5点以上であることをtreatmentとする
 
 # 第1期の強迫、PLEを除外したXを読み込み
 X = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv", delimiter=",")
+X = X.set_index("SAMPLENUMBER")
 print("X:\n", X)
 print("補完後のNaN個数\n", X.isnull().sum())
 
