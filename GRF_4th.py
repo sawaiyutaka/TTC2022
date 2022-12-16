@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import seaborn as s
 import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.linear_model import LassoCV
 from sklearn.model_selection import train_test_split
 from econml.dml import CausalForestDML
@@ -96,7 +97,7 @@ est = CausalForestDML(model_y=RandomForestRegressor(),
                       random_state=42)
 """
 
-est = CausalForestDML(criterion='het',
+est = CausalForestDML(criterion='mse',
                       n_estimators=10000,
                       min_samples_leaf=10,
                       max_depth=None,
@@ -105,10 +106,10 @@ est = CausalForestDML(criterion='het',
                       honest=True,
                       inference=True,
                       cv=10,
-                      model_t=LassoCV(max_iter=100000),
-                      model_y=LassoCV(max_iter=100000),
+                      model_t=RandomForestRegressor(),  # LassoCV(max_iter=100000),
+                      model_y=RandomForestClassifier(),  # LassoCV(max_iter=100000),
                       random_state=2525,
-                      n_jobs=10)
+                      n_jobs=3)
 
 # fit train data to causal forest model
 est.fit(Y, T, X=X, W=W)
@@ -195,7 +196,7 @@ te_pred_test2 = est.effect(X_test2)
 print("te_pred: \n", te_pred)
 print("要素数", len(te_pred))
 # 各CATEの値のXの要素を示す
-df_new = X.assign(te_pred=te_pred)
+df_new = df.assign(te_pred=te_pred)
 print("CATEを追加\n", df_new)
 df_new.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_4th.csv")
 
