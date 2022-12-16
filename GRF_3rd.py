@@ -46,6 +46,9 @@ print("Y\n", Y)
 
 T = df['OCS_0or1']  # 強迫CMCL5点以上であることをtreatmentとする
 
+# Xから回答日、回答時点の月齢は削除
+X = df.drop(["AA1YEAR", "AA1MONTH", "AA1DAY", "AA1age"], axis=1)
+
 # 第3期のPLEを除外
 X = df.drop(["PLE_sum", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"],
             axis=1)
@@ -193,8 +196,8 @@ print("te_pred: \n", te_pred)
 print("要素数", len(te_pred))
 # 各CATEの値のXの要素を示す
 df_new = X.assign(te_pred=te_pred)
-print("CATEを追加\n", df_new)
-df_new.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_4th.csv")
+print("CATEを追加_3rd\n", df_new)
+df_new.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_3rd.csv")
 
 # CATEの推定結果を確認
 print("CATE of CausalForest: ", round(np.mean(te_pred), 2))
@@ -209,10 +212,20 @@ df_lower = df_new[(df_new["te_pred"] < lower)]  # CATE下位10%
 print("upper＝影響を受けやすかった10%: \n", df_upper)
 print("lower＝影響を受けにくかった10%: \n", df_lower)
 
-print("df_upper\n", df_upper.describe())
+all_1st = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_1st_outcome_Imp.csv",
+                        delimiter=",", low_memory=False)
+all_1st = all_1st.set_index("SAMPLENUMBER")
+
+print("df_upper_3rd\n", df_upper.describe())
+cols_to_use = all_1st.columns.difference(df_upper.columns)
+print("第１期量的データにあって、upper, lowerに含まれない項目を検出\n", cols_to_use)
+df_upper = df_upper.join([all_1st[cols_to_use]], how='inner')
+print("df_upper_3rd\n", df_upper.describe())
 df_upper.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_upper_3rd.csv")
 
-print("df_lower\n", df_lower.describe())
+print("df_lower_3rd\n", df_lower.describe())
+df_lower = df_lower.join([all_1st[cols_to_use]], how='inner')
+print("df_lower_3rd\n", df_lower.describe())
 df_lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_3rd.csv")
 
 # CATE(全体)
@@ -238,7 +251,7 @@ plt.figure()
 shap_values = est.shap_values(X)
 # plot shap values
 plt.title("3rd")
-shap.summary_plot(shap_values['PLE_sum']['OCS_0or1'], max_display=30, order=shap_values.abs.max(0))
+shap.summary_plot(shap_values['PLE_sum']['OCS_0or1'])  # , max_display=30, order=shap_values.abs.max(0))
 
 # Note that the structure of this estimator is based on the BaseEstimator and RegressorMixin from sklearn; however,
 # here we predict treatment effects –which are unobservable– hence regular model validation and model selection

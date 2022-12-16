@@ -17,7 +17,7 @@ print(all_1st)
 
 print("NaN個数\n", all_1st.isnull().sum())
 sr = all_1st.isnull().sum()
-# sr.to_csv("NaN_in_all_1st.csv")
+sr.to_csv("NaN_in_all_1st.csv")
 
 s.displot(sr)
 plt.show()
