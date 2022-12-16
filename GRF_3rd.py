@@ -9,71 +9,19 @@ from econml.dml import CausalForestDML
 import shap
 
 # imputeした後のデータフレーム、PLEとAQの合計得点前
-df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed.csv", delimiter=",")
+df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_T_Y_imputed.csv", delimiter=",")
 df = df.set_index("SAMPLENUMBER")
 print(df)
 
-# PLEの合計点を作成(第3期)
-df_Y = df[["CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"]]
-print("df_Y\n", df_Y)
-df_Y["PLE_sum"] = df_Y.sum(axis=1)
-print("第3回PLE合計\n", df_Y["PLE_sum"])
-
-"""
-# PLEの合計点を作成(第4期)
-df_Y = df[["DD64_1", "DD65_1", "DD66_1", "DD67_1", "DD68_1", "DD69_1", "DD70_1", "DD71_1", "DD72_1"]]
-print("df_Y\n", df_Y)
-df_Y["PLE_sum"] = df_Y.sum(axis=1)
-print("第4回PLE合計\n", df_Y["PLE_sum"])
-"""
-
-# AQの合計点を作成
-df_AQ = df.filter(regex='^(BB12|BB13)', axis=1)
-df_AQ["AQ_sum"] = df_AQ.sum(axis=1)
-print("第2回AQ合計\n", df_AQ["AQ_sum"])
-# df_AQ = df_AQ.reset_index()
-
-df = pd.concat([df, df_Y], axis=1, join='inner')
-print("PLE合計点を追加した\n", df.head())
-
-df = pd.concat([df, df_AQ], axis=1, join='inner')
-print("AQ合計点を追加した\n", df.head())
-# df.to_csv("TTC2022_PLE_sum.csv")
-
-
 # 特徴量 X、アウトカム Y、割り当て変数 T
-Y = df_Y['PLE_sum']  # 'CD65_1'などとすると、単一項目で見られる
+Y = df['PLE_sum_3rd']  # 'CD65_1'などとすると、単一項目で見られる
 print("Y\n", Y)
 
 T = df['OCS_0or1']  # 強迫CMCL5点以上であることをtreatmentとする
 
-# Xから回答日、回答時点の月齢は削除
-X = df.drop(["AA1YEAR", "AA1MONTH", "AA1DAY", "AA1age"], axis=1)
-
-# 第3期のPLEを除外
-X = X.drop(["PLE_sum", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"],
-           axis=1)
-
-# 第4期のPLEを除外
-X = X.drop(["DD64_1", "DD65_1", "DD66_1", "DD67_1", "DD68_1", "DD69_1", "DD70_1", "DD71_1", "DD72_1"], axis=1)
-
-# 第２期の強迫を除外
-X = X.drop(["BB39", "BB56", "BB57", "BB73", "BB83", "BB95", "BB96", "BB116", "OCS_sum", "OCS_0or1"], axis=1)
-
-# 第２期のAQを除外
-X = X.drop(["BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132"], axis=1)
-
-print(X)
-# 第1期の強迫を除外
-X = X.drop(["AB71", "AB87", "AB88", "AB104", "AB114", "AB126", "AB127", "AB145"], axis=1)
-X = X.drop(["AD57", "AD58", "AD59", "AD60", "AD61", "AD62"], axis=1)
-
-X = X.loc[:, ~X.columns.duplicated()]
-print("重複を削除\n", X)
-X.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv")
 
 # 第1期の強迫、PLEを除外したXを読み込み
-# X = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_alldata/X_imputed.csv", delimiter=",")
+X = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv", delimiter=",")
 print("X:\n", X)
 print("補完後のNaN個数\n", X.isnull().sum())
 
@@ -219,21 +167,22 @@ all_1st = all_1st.set_index("SAMPLENUMBER")
 
 print("df_upper_3rd\n", df_upper.describe())
 cols_to_use = all_1st.columns.difference(df_upper.columns)
+
 print("第１期量的データにあって、upper, lowerに含まれない項目を検出\n", cols_to_use)
-df_upper = df_upper.join([all_1st[cols_to_use]], how='inner')
-print("df_upper_3rd\n", df_upper.describe())
-df_upper.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_upper_3rd.csv")
+upper = df_upper.join([all_1st[cols_to_use]], how='inner')
+print("df_upper_3rd\n", upper.describe())
+upper.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_upper_3rd.csv")
 
 print("df_lower_3rd\n", df_lower.describe())
-df_lower = df_lower.join([all_1st[cols_to_use]], how='inner')
-print("df_lower_3rd\n", df_lower.describe())
-df_lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_3rd.csv")
+lower = df_lower.join([all_1st[cols_to_use]], how='inner')
+print("df_lower_3rd\n", lower.describe())
+lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_3rd.csv")
 
 # CATE(全体)
-# s.set()
-# s.displot(te_pred)
+s.set()
+s.displot(te_pred)
 # plt.savefig("/Volumes/Pegasus32R8/TTC/202211/cate_4th.svg")
-# plt.show()
+plt.show()
 
 '''
 # CATE(前半)

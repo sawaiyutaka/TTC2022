@@ -122,6 +122,8 @@ gsr.fit(X_train, Y_train)
 print(gsr.best_estimator_)
 print("最もよかったモデルの評価", gsr.best_estimator_.score(X_val, Y_val))
 
+
+# X→Tの予測に使うランダムフォレストのグリッドサーチ
 # sklearnの機械学習モデル（ランダムフォレスト）のインスタンスを作成する
 # 教師データと教師ラベルを使い、fitメソッドでモデルを学習
 model_t = RandomForestClassifier(max_depth=None,

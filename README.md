@@ -20,8 +20,12 @@
 
 　第1期および第3期・第4期のPLE欠損値をランダムフォレストを使って補完
 
+5 X_T_Y_prep.py
 
-5 GRF_3rd.py, GRF_4th.py(順不同)
+　PLEやAQ10など素点から計算
+
+
+6 GRF_3rd.py, GRF_4th.py(順不同)
 
 　一般化ランダムフォレストによるtreatment effectの計算
 
@@ -30,11 +34,12 @@
 　treatment effectの予測に関わった共変量（第1期のデータ）を示す：shap valueを使用
 
 
-6 (中止)shap_of_cate.py
+
+(中止)shap_of_cate.py
 
 　treatment effectと第1期データを結合して、
 
 　treatment effectの予測に関わった共変量（第1期のデータ）を示す：shap valueを使用
 
 
-7 (保留)predictor_random4TTC
+(保留)predictor_random4TTC
