@@ -50,7 +50,7 @@ T = df['OCS_0or1']  # 強迫CMCL5点以上であることをtreatmentとする
 X = df.drop(["AA1YEAR", "AA1MONTH", "AA1DAY", "AA1age"], axis=1)
 
 # 第3期のPLEを除外
-X = df.drop(["PLE_sum", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"],
+X = X.drop(["PLE_sum", "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"],
             axis=1)
 
 # 第4期のPLEを除外
@@ -200,7 +200,7 @@ print("CATEを追加_3rd\n", df_new)
 df_new.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_3rd.csv")
 
 # CATEの推定結果を確認
-print("CATE of CausalForest: ", round(np.mean(te_pred), 2))
+print("CATE of CausalForest: ", np.mean(te_pred))
 
 print("Percentile of CATE of CausalForest: 10%, 25%, 50%, 75%, 90%\n",
       np.quantile(a=te_pred, q=[.1, .25, .5, .75, .9]))
