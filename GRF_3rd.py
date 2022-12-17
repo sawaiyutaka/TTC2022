@@ -19,7 +19,6 @@ print("Y\n", Y)
 
 T = df['OCS_0or1']  # 強迫CMCL5点以上であることをtreatmentとする
 
-
 # 第1期の強迫、PLEを除外したXを読み込み
 X = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv", delimiter=",")
 X = X.set_index("SAMPLENUMBER")
@@ -35,17 +34,6 @@ n_treatments = 1
 Y_train, Y_val, T_train, T_val, X_train, X_val = train_test_split(Y, T, X, test_size=.2)
 W = None
 
-"""
-est = CausalForestDML(model_y=RandomForestRegressor(),
-                      model_t=RandomForestRegressor(),
-                      criterion='mse',
-                      n_estimators=1000,
-                      max_depth=40,
-                      min_samples_split=20,
-                      min_impurity_decrease=0.001,
-                      random_state=42)
-"""
-
 est = CausalForestDML(criterion='mse',
                       n_estimators=10000,
                       min_samples_leaf=10,
@@ -55,8 +43,22 @@ est = CausalForestDML(criterion='mse',
                       honest=True,
                       inference=True,
                       cv=10,
-                      model_t=RandomForestRegressor(),  # LassoCV(max_iter=100000),
-                      model_y=RandomForestClassifier(),  # LassoCV(max_iter=100000),
+                      model_t=RandomForestClassifier(max_depth=None,
+                                                     max_features='sqrt',
+                                                     min_samples_split=5,
+                                                     min_samples_leaf=1,
+                                                     n_estimators=10000,
+                                                     n_jobs=25,
+                                                     # number of jobs to run in parallel(-1 means using all processors)
+                                                     random_state=2525),  # LassoCV(max_iter=100000),
+                      model_y=RandomForestRegressor(max_depth=None,
+                                                    max_features=100,
+                                                    # The number of features to consider when looking for the best split
+                                                    # 'sqrt'も可能
+                                                    min_samples_split=5,
+                                                    min_samples_leaf=1,
+                                                    n_estimators=10000,
+                                                    random_state=2525),  # LassoCV(max_iter=100000),
                       random_state=2525,
                       n_jobs=5)
 
@@ -84,8 +86,6 @@ lst = [covariate, feature_importance]
 df1 = pd.DataFrame(lst, index=['covariate', 'feature_importance'])
 df2 = df1.T
 print(df2)
-
-# df2.to_csv("importance_3rd.csv")
 
 df2.sort_values('feature_importance', inplace=True, ascending=False)
 print(df2)
@@ -132,7 +132,7 @@ ax.plot(z['ub'],
         marker='.', linestyle='-', linewidth=0.5, color='steelblue')
 # label axes and create legend
 ax.set_ylabel('Treatment Effects')
-ax.set_xlabel('Number of observations')
+ax.set_xlabel('Number of observations (3rd)')
 ax.legend()
 plt.show()
 

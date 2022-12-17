@@ -78,7 +78,7 @@ n_samples = len(df)
 n_treatments = 1
 
 Y_train, Y_val, T_train, T_val, X_train, X_val = train_test_split(Y, T, X, test_size=.2)
-
+"""
 # X→Yの予測に使うランダムフォレストのグリッドサーチ
 # sklearnの機械学習モデル（ランダムフォレスト）のインスタンスを作成する
 # 教師データと教師ラベルを使い、fitメソッドでモデルを学習
@@ -121,7 +121,7 @@ gsr.fit(X_train, Y_train)
 # 最もよかったモデル
 print(gsr.best_estimator_)
 print("最もよかったモデルの評価", gsr.best_estimator_.score(X_val, Y_val))
-
+"""
 
 # X→Tの予測に使うランダムフォレストのグリッドサーチ
 # sklearnの機械学習モデル（ランダムフォレスト）のインスタンスを作成する
@@ -132,7 +132,7 @@ model_t = RandomForestClassifier(max_depth=None,
                                  # 'sqrt'も可能
                                  min_samples_split=5,
                                  min_samples_leaf=1,
-                                 n_estimators=100000,
+                                 n_estimators=10000,
                                  n_jobs=25,  # number of jobs to run in parallel(-1 means using all processors)
                                  random_state=2525)
 
@@ -145,8 +145,8 @@ print("model_score: ", model_t.score(X_val, T_val))
 # X→Yの予測に使うランダムフォレストのグリッドサーチ
 # ハイパーパラメータをチューニング
 search_params = {
-    'n_estimators': [10000, 50000, 100000, 200000],
-    'max_features': [i for i in range(2, int(X_train.shape[1] / 2), 50)],
+    'n_estimators': [10000, 50000, 20000],
+    'max_features': [i for i in range(2, int(X_train.shape[1] / 3), 50)],
     'random_state': [2525],
     # 'min_samples_split': [2, 5, 10, 20],
     # 'min_samples_leaf': [1, 5, 10, 20]
