@@ -48,19 +48,19 @@ est = CausalForestDML(criterion='mse',
                                                      min_samples_split=5,
                                                      min_samples_leaf=1,
                                                      n_estimators=10000,
-                                                     n_jobs=25,
+                                                     n_jobs=10,
                                                      # number of jobs to run in parallel(-1 means using all processors)
                                                      random_state=2525),  # LassoCV(max_iter=100000),
                       model_y=RandomForestRegressor(max_depth=None,
                                                     max_features=100,
                                                     # The number of features to consider when looking for the best split
-                                                    # 'sqrt'も可能
                                                     min_samples_split=5,
                                                     min_samples_leaf=1,
                                                     n_estimators=10000,
+                                                    n_jobs=10,
                                                     random_state=2525),  # LassoCV(max_iter=100000),
                       random_state=2525,
-                      n_jobs=5)
+                      n_jobs=10)
 
 # fit train data to causal forest model
 est.fit(Y, T, X=X, W=W)
