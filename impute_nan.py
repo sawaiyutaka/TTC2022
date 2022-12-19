@@ -43,5 +43,5 @@ df_imputed = imputer.fit_transform(df)
 print("df_imputed\n", df_imputed)
 df[df.columns.values] = df_imputed
 df = df.round().astype(int)  # 各列を整数に丸める（身長、体重も丸め）
-df.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/base_ple_imputed.csv")
+df.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/imputed.csv")
 print("set_indexは？\n", df)

@@ -59,22 +59,9 @@ print("強迫症状カットオフ以上\n", oc_pos.sum())  # 5点以上だと11
 oc_2nd["OCS_0or1"] = (oc_2nd["OCS_sum"] > OCS_CUT_OFF) * 1.0
 print("OCS_0or1\n", oc_2nd)  # 第２期にOC欠損値なしは2733行
 
-# AQの合計点を作成
+# AQ
 aq_2nd = oc_ple[["BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132"]]
 print(aq_2nd)
-
-print(aq_2nd.replace({"BB123": {1: 0, 2: 0, 3: 1, 4: 1, 5: 0}}))
-
-for i in ["BB123", "BB124", "BB128", "BB129", "BB130", "BB131"]:
-    aq_2nd = aq_2nd.replace({i: {1: 0, 2: 0, 3: 1, 4: 1, 5: 0}})
-    print(aq_2nd)
-
-for i in ["BB125", "BB126", "BB127", "BB132"]:
-    aq_2nd = aq_2nd.replace({i: {1: 1, 2: 1, 3: 0, 4: 0, 5: 0}})
-    print(aq_2nd)
-
-aq_2nd["AQ_sum"] = aq_2nd.sum(axis=1)
-print("第2回AQ合計\n", aq_2nd["AQ_sum"])
 
 # 第3期PLEのデータフレーム
 ple = oc_ple.filter(like='_1', axis=1)
