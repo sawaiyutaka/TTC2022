@@ -36,7 +36,9 @@ print("AQ合計点を追加した\n", df.head())
 
 
 # 特徴量 X、アウトカム Y、割り当て変数 T
-Y = df_Y['PLE_sum']  # 'CD65_1'などとすると、単一項目で見られる
+# Y = df_Y['PLE_sum']  # 'CD65_1'などとすると、単一項目で見られる
+df_Y = df_Y.replace({'CD65_1': {1: 0, 2: 0, 3: 1, 4: 1}})  # 幻聴の有無
+Y = df_Y['CD65_1']
 print("Y\n", Y)
 
 T = df['OCS_0or1']  # 強迫CMCL5点以上であることをtreatmentとする
@@ -78,7 +80,25 @@ n_samples = len(df)
 n_treatments = 1
 
 Y_train, Y_val, T_train, T_val, X_train, X_val = train_test_split(Y, T, X, test_size=.2)
-"""
+
+# Yを二値にした場合
+model_y = RandomForestClassifier(max_depth=None,
+                                 max_features='sqrt',
+                                 # The number of features to consider when looking for the best split
+                                 # 'sqrt'も可能
+                                 min_samples_split=5,
+                                 min_samples_leaf=1,
+                                 n_estimators=10000,
+                                 n_jobs=20,  # number of jobs to run in parallel(-1 means using all processors)
+                                 random_state=2525)
+
+model_y.fit(X_train, Y_train)
+
+# 学習済みモデルの評価
+predicted_Y_val = model_y.predict(X_val)
+print("model_score: ", model_y.score(X_val, Y_val))
+
+'''
 # X→Yの予測に使うランダムフォレストのグリッドサーチ
 # sklearnの機械学習モデル（ランダムフォレスト）のインスタンスを作成する
 # 教師データと教師ラベルを使い、fitメソッドでモデルを学習
@@ -121,7 +141,7 @@ gsr.fit(X_train, Y_train)
 # 最もよかったモデル
 print(gsr.best_estimator_)
 print("最もよかったモデルの評価", gsr.best_estimator_.score(X_val, Y_val))
-"""
+
 
 # X→Tの予測に使うランダムフォレストのグリッドサーチ
 # sklearnの機械学習モデル（ランダムフォレスト）のインスタンスを作成する
@@ -167,3 +187,4 @@ gsr.fit(X_train, T_train)
 # 最もよかったモデル
 print(gsr.best_estimator_)
 print("最もよかったモデルの評価", gsr.best_estimator_.score(X_val, T_val))
+'''

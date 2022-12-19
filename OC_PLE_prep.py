@@ -16,7 +16,7 @@ with codecs.open("/Volumes/Pegasus32R8/TTC/2022base_OC_PLE/180511AB基本セッ�
     df1 = pd.read_table(file1, delimiter=",", low_memory=False)
     print(df1.head())
     df1 = df1[["SAMPLENUMBER", "TTC_sex", "AA1age", "AE1BMI",
-               "AEIQ", "AAFedu", "AAMedu", "AA79Fsep", "AB161MIQ"]]
+               "AEIQ", "AAFedu", "AAMedu", "AA79Fsep", "AB161MIQ", "AA127Respondent"]]
     print(df1.head())
 
     base_1st = df1.replace(r'^\s+$', np.nan, regex=True)  # 空白をNaNに置換

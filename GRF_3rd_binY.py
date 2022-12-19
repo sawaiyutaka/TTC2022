@@ -14,7 +14,9 @@ df = df.set_index("SAMPLENUMBER")
 print(df)
 
 # 特徴量 X、アウトカム Y、割り当て変数 T
-Y = df['PLE_sum_3rd']  # 'CD65_1'などとすると、単一項目で見られる
+# Y = df['PLE_sum_3rd']  # 'CD65_1'などとすると、単一項目で見られる
+df_Y = df.replace({'CD65_1': {1: 0, 2: 0, 3: 1, 4: 1}})  # 幻聴の有無
+Y = df_Y['CD65_1']
 print("Y\n", Y)
 
 T = df['OCS_0or1']  # 強迫CMCL5点以上であることをtreatmentとする
@@ -51,14 +53,14 @@ est = CausalForestDML(criterion='mse',
                                                      n_jobs=15,
                                                      # number of jobs to run in parallel(-1 means using all processors)
                                                      random_state=2525),  # LassoCV(max_iter=100000),
-                      model_y=RandomForestRegressor(max_depth=None,
-                                                    max_features=100,
-                                                    # The number of features to consider when looking for the best split
-                                                    min_samples_split=5,
-                                                    min_samples_leaf=1,
-                                                    n_estimators=10000,
-                                                    n_jobs=15,
-                                                    random_state=2525),  # LassoCV(max_iter=100000),
+                      model_y=RandomForestClassifier(max_depth=None,
+                                                     max_features='sqrt',
+                                                     min_samples_split=5,
+                                                     min_samples_leaf=1,
+                                                     n_estimators=10000,
+                                                     n_jobs=15,
+                                                     # number of jobs to run in parallel(-1 means using all processors)
+                                                     random_state=2525),  # LassoCV(max_iter=100000),
                       random_state=2525,
                       n_jobs=15)
 
@@ -90,7 +92,7 @@ print(df2)
 df2.sort_values('feature_importance', inplace=True, ascending=False)
 print(df2)
 
-df2.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/importance_3rd_sort.csv")
+df2.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/importance_3rd_binY_sort.csv")
 
 '''
 # 半分に分割してテスト
@@ -132,7 +134,7 @@ ax.plot(z['ub'],
         marker='.', linestyle='-', linewidth=0.5, color='steelblue')
 # label axes and create legend
 ax.set_ylabel('Treatment Effects')
-ax.set_xlabel('Number of observations (3rd)')
+ax.set_xlabel('Number of observations (3rd_binY)')
 ax.legend()
 plt.show()
 
@@ -146,8 +148,8 @@ print("te_pred: \n", te_pred)
 print("要素数", len(te_pred))
 # 各CATEの値のXの要素を示す
 df_new = df.assign(te_pred=te_pred)
-print("CATEを追加_3rd\n", df_new)
-df_new.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_3rd.csv")
+print("CATEを追加_3rd_binY\n", df_new)
+df_new.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_alldata_CATE_3rd_binY.csv")
 
 # CATEの推定結果を確認
 print("CATE of CausalForest: ", np.mean(te_pred))
@@ -166,18 +168,18 @@ all_1st = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_1st_ou
                         delimiter=",", low_memory=False)
 all_1st = all_1st.set_index("SAMPLENUMBER")
 
-print("df_upper_3rd\n", df_upper.describe())
+print("df_upper_3rd_binY\n", df_upper.describe())
 cols_to_use = all_1st.columns.difference(df_upper.columns)
 
 print("第１期量的データにあって、upper, lowerに含まれない項目を検出\n", cols_to_use)
 upper = df_upper.join([all_1st[cols_to_use]], how='inner')
-print("df_upper_3rd\n", upper.describe())
-upper.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_upper_3rd.csv")
+print("df_upper_3rd_binY\n", upper.describe())
+upper.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_upper_3rd_binY.csv")
 
-print("df_lower_3rd\n", df_lower.describe())
+print("df_lower_3rd_binY\n", df_lower.describe())
 lower = df_lower.join([all_1st[cols_to_use]], how='inner')
-print("df_lower_3rd\n", lower.describe())
-lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_3rd.csv")
+print("df_lower_3rd_binY\n", lower.describe())
+lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_3rd_binY.csv")
 
 # CATE(全体)
 s.set()
@@ -201,6 +203,7 @@ plt.figure()
 # calculate shap values of causal forest model
 shap_values = est.shap_values(X)
 # plot shap values
+plt.title("3rd_binY")
 shap.summary_plot(shap_values['PLE_sum']['OCS_0or1'])  # , max_display=30, order=shap_values.abs.max(0))
 
 # Note that the structure of this estimator is based on the BaseEstimator and RegressorMixin from sklearn; however,
