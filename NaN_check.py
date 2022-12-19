@@ -5,10 +5,10 @@ from matplotlib import pyplot as plt
 NUM_0F_NAN = int(1844 * 0.01)  # 欠損値が何人未満の項目を使うか
 
 # 現在の最大表示列数の出力
-pd.get_option("display.max_columns")
+# pd.get_option("display.max_columns")
 
 # 最大表示列数の指定（ここでは50列を指定）
-pd.set_option('display.max_columns', 50)
+# pd.set_option('display.max_columns', 50)
 
 data4grf = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf_before_impute.csv",
                          delimiter=",", low_memory=False)
