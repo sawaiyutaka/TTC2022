@@ -17,22 +17,6 @@ print("df_Y\n", df_Y)
 df["PLE_sum_4th"] = df_Y.sum(axis=1)
 print("第4回PLE合計\n", df["PLE_sum_4th"])
 
-# AQの合計点を作成
-df_AQ = df[["BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132"]]
-print(df_AQ)
-
-print(df_AQ.replace({"BB123": {1: 0, 2: 0, 3: 1, 4: 1, 5: 0}}))
-
-for i in ["BB123", "BB124", "BB128", "BB129", "BB130", "BB131"]:
-    df_AQ = df_AQ.replace({i: {1: 0, 2: 0, 3: 1, 4: 1, 5: 0}})
-    print(df_AQ)
-
-for i in ["BB125", "BB126", "BB127", "BB132"]:
-    df_AQ = df_AQ.replace({i: {1: 1, 2: 1, 3: 0, 4: 0, 5: 0}})
-    print(df_AQ)
-
-df["AQ_sum"] = df_AQ.sum(axis=1)
-print("第2回AQ合計\n", df["AQ_sum"])
 print(df)
 df.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_T_Y_imputed.csv")
 
