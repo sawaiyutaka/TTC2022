@@ -37,8 +37,8 @@ print("AQ合計点を追加した\n", df.head())
 
 # 特徴量 X、アウトカム Y、割り当て変数 T
 # Y = df_Y['PLE_sum']  # 'CD65_1'などとすると、単一項目で見られる
-df_Y = df_Y.replace({'CD65_1': {1: 0, 2: 0, 3: 1, 4: 1}})  # 幻聴の有無
-Y = df_Y['CD65_1']
+df_Y = df_Y.replace({'CD65_1': {1: 0, 2: 0, 3: 0, 4: 1}})  # 幻聴の有無
+Y = df_Y['CD65_1']  # 感度分析としてYを二値にしたが、CATEは0近く
 print("Y\n", Y)
 
 T = df['OCS_0or1']  # 強迫CMCL5点以上であることをtreatmentとする
