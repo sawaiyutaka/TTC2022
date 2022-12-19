@@ -82,7 +82,8 @@ ple_4th = ple_4th.drop('DD77_1', axis=1)  # PLE第4期のうち、頻度以外�
 print("第4期PLE：\n", ple_4th)
 
 # 第１期にPLEがなかった群を抽出
-df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/columns_NAN_under_150.csv", delimiter=",")
+df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_1st_outcome_Imp.csv",
+                   delimiter=",", low_memory=False)
 df = df.set_index("SAMPLENUMBER")
 print(df.head())
 # print("第１期データのNaN個数\n", df.isnull().sum())
@@ -111,7 +112,8 @@ cols_to_use = df.columns.difference(ple_neg_oc.columns)
 print("第１期量的データにあって、PLEやOCSに含まれない項目を検出\n", cols_to_use)
 df4grf = ple_neg_oc.join([df[cols_to_use], base_1st, aq_2nd, ple_3rd, ple_4th], how='inner')
 print("set_indexがなされているか？\n", df4grf)
-# df4grf.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf.csv")  # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
+df4grf.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf_before_impute.csv")
+# 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
 
 print("NaN個数\n", df4grf["OCS_0or1"].isnull().sum())
 print("OCSあり\n", df4grf["OCS_0or1"].sum())
