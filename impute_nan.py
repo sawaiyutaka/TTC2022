@@ -4,7 +4,9 @@ from missingpy import MissForest
 import sys
 import sklearn.neighbors._base
 
-df0 = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/data4grf.csv", delimiter=",")
+NUM_0F_NAN = int(1844 * 0.01)  # 欠損値が何人未満の項目を使うか
+df0 = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/columns_NAN_under_18.csv",
+                    delimiter=",")
 # df = df.drop(["Unnamed: 0"], axis=1)
 df0 = df0.set_index("SAMPLENUMBER")
 print(df0.head())
@@ -15,9 +17,6 @@ print(df1.head())
 df = pd.merge(df0, df1, left_index=True, right_index=True)
 print(df.head())
 
-# 回答日、回答時点の月齢は削除、調査員番号や調査員訪問日も削除
-df = df.drop(["AA1YEAR", "AA1MONTH", "AA1DAY", "AA1age",
-              "VS1", "VS2D", "VS2M", "VS2Y", "VS3", "VS4", "VS5", "VS6", "VS7"], axis=1)
 
 """
 numeric_columns = [colname for colname in df.columns if df[colname].dtype == float]  # 数値のみ抽出⇦整数を除外していた

@@ -201,7 +201,7 @@ plt.figure()
 # calculate shap values of causal forest model
 shap_values = est.shap_values(X)
 # plot shap values
-shap.summary_plot(shap_values['PLE_sum']['OCS_0or1'])  # , max_display=30, order=shap_values.abs.max(0))
+shap.summary_plot(shap_values['PLE_sum_4th']['OCS_0or1'])  # , max_display=30, order=shap_values.abs.max(0))
 
 # Note that the structure of this estimator is based on the BaseEstimator and RegressorMixin from sklearn; however,
 # here we predict treatment effects –which are unobservable– hence regular model validation and model selection
