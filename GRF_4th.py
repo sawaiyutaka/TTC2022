@@ -18,6 +18,7 @@ Y = df['PLE_sum_4th']  # 'CD65_1'などとすると、単一項目で見られ�
 print("Y\n", Y)
 
 T = df['OCS_0or1']  # 強迫CMCL5点以上であることをtreatmentとする
+print("T\n", T)
 
 # 第1期の強迫、PLEを除外したXを読み込み
 X = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/X_imputed.csv", delimiter=",")
@@ -134,7 +135,7 @@ ax.plot(z['ub'],
 ax.set_ylabel('Treatment Effects')
 ax.set_xlabel('Number of observations (4th)')
 ax.legend()
-plt.show()
+# plt.show()
 
 '''
 # X_testのみでCATEを計算
@@ -183,7 +184,7 @@ lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_4th.csv")
 s.set()
 s.displot(te_pred)
 # plt.savefig("/Volumes/Pegasus32R8/TTC/202211/cate_4th.svg")
-plt.show()
+# plt.show()
 
 '''
 # CATE(前半)
