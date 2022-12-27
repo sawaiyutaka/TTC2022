@@ -173,12 +173,15 @@ cols_to_use = all_1st.columns.difference(df_upper.columns)
 print("第１期量的データにあって、upper, lowerに含まれない項目を検出\n", cols_to_use)
 upper = df_upper.join([all_1st[cols_to_use]], how='inner')
 print("df_upper_4th\n", upper.describe())
-upper.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_upper_4th.csv")
+upper["group"] = 1
 
 print("df_lower_4th\n", df_lower.describe())
 lower = df_lower.join([all_1st[cols_to_use]], how='inner')
 print("df_lower_4th\n", lower.describe())
-lower.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_lower_4th.csv")
+lower["group"] = 0
+
+UL10 = pd.merge(upper, lower, left_index=True, right_index=True)
+UL10.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/TTC2022_UL10_4th.csv")
 
 # CATE(全体)
 s.set()
