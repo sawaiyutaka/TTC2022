@@ -19,6 +19,8 @@ df = pd.read_table("df_3rd.csv", delimiter=",")
 df = df.set_index("SAMPLENUMBER")
 print(df)
 
+# hyperparameter tuning using Optuna with RandomForestClassifier Example (Python code)
+# https://www.datasciencebyexample.com/2022/07/02/2022-07-02-1/
 
 # 特徴量 X、アウトカム y、割り当て変数 T
 y = df["PLE_sum_3rd"]
