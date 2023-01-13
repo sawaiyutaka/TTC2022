@@ -5,7 +5,8 @@ import codecs
 import seaborn as s
 from matplotlib import pyplot as plt
 
-OCS_CUT_OFF = 2  # 強迫のCBCLカットライン。（-「項目数」点）以下は強迫なしとする。1854人中290人がOCS 1となる
+OCS_CUT_OFF = 12  # 強迫のCBCLカットライン。（-「項目数」点）以下は強迫なしとする。
+# 2項目だと、1854人中290人がOCS 1となる
 
 # 第１期基礎データ
 with codecs.open("/Volumes/Pegasus32R8/TTC/2022base_OC_PLE/180511AB基本セット（CBCL・SDQ・SMFQ）_200720.csv", "r", "Shift-JIS",
@@ -40,8 +41,8 @@ print(oc_ple)
 
 # 第２期のOC
 # 強迫の人数(cut off 5以上)
-# oc_2nd = oc_ple[["BB39", "BB56", "BB57", "BB73", "BB83", "BB95", "BB96", "BB116"]]  # 8項目ver
-oc_2nd = oc_ple[["BB39", "BB83"]]  # 2項目ver (2点以上は45人)
+oc_2nd = oc_ple[["BB39", "BB56", "BB57", "BB73", "BB83", "BB95", "BB96", "BB116"]]  # 8項目ver
+# oc_2nd = oc_ple[["BB39", "BB83"]]  # 2項目ver (2点以上は45人)
 print("第２期のOC\n", oc_2nd)
 print("NaN個数\n", oc_2nd.isnull().sum())
 oc_2nd = oc_2nd.dropna(how='any')  # ★強迫症状の項目にNaNを含むもの削除
