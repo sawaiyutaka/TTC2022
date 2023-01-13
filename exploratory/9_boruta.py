@@ -73,7 +73,6 @@ for n in range(10000):
     corr = np.corrcoef(X_train, shadow_features, rowvar=False)[-1]
     corr = abs(corr[corr < 0.95])
     corr_list.append(corr.max())
-
 corr_array = np.array(corr_list)
 perc = 100 * (1 - corr_array.max())
 print('pパーセンタイル:', round(perc, 2))
@@ -175,11 +174,9 @@ rf2 = RandomForestClassifier(
     max_features='sqrt'
 )
 rf2.fit(X_train_selected.values, Y_train.values)
-
 print(rf2.classes_)
 print(confusion_matrix(Y_test.values, rf2.predict(X_test_selected.values), labels=rf.classes_))
 print("after boruta\n", accuracy_score(Y_test, rf2.predict(X_test_selected)))
-
 # sklearnの機械学習モデル（ランダムフォレスト）のインスタンスを作成する
 # 教師データと教師ラベルを使い、fitメソッドでモデルを学習
 model = RandomForestRegressor(max_depth=None,
@@ -192,22 +189,18 @@ model = RandomForestRegressor(max_depth=None,
                               n_jobs=int(cpu_count() / 2),
                               random_state=42)
 model.fit(X_train, Y_train)
-
 # 学習済みモデルの評価
 predicted_Y_val = model.predict(X_test)
 print("model_score: ", model.score(X_test, Y_test))
-
 # Borutaを実行
 rf = RandomForestRegressor(n_jobs=int(cpu_count() / 2), max_depth=7)
 feat_selector = BorutaPy(rf, n_estimators='auto', two_step=False, verbose=2, random_state=42)
 feat_selector.fit(X_train.values, Y_train.values)
 print(X_train.columns[feat_selector.support_])
-
 # 選択したFeatureを取り出し
 X_train_selected = X_train.iloc[:, feat_selector.support_]
 X_val_selected = X_test.iloc[:, feat_selector.support_]
 print(X_val_selected.head())
-
 # 選択したFeatureで学習
 rf2 = RandomForestRegressor(max_depth=None,
                             max_features='auto',
@@ -219,18 +212,14 @@ rf2 = RandomForestRegressor(max_depth=None,
                             n_jobs=int(cpu_count() / 2),
                             random_state=42)
 rf2.fit(X_train_selected.values, Y_train.values)
-
 predicted_Y_val_selected = rf2.predict(X_val_selected.values)
 print("model_score_2: ", rf2.score(X_val_selected, Y_test))
-
 explainer = shap.TreeExplainer(bst)
 shap_values = explainer.shap_values(X)
-
 # shap valueで評価（時間がかかる）
 # Fits the explainer
 explainer = shap.Explainer(y_pred, X_test_selected)
 # Calculates the SHAP values - It takes some time
 shap_values = explainer(X_test_selected)
-
 # shap.plots.bar(shap_values, max_display=len(X_test_selected.columns))
 """
