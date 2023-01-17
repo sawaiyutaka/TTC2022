@@ -13,7 +13,7 @@ from multiprocessing import cpu_count
 
 # from dcekit.variable_selection import search_high_rate_of_same_values, search_highly_correlated_variables
 
-df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_outcome/imputed.csv", delimiter=",")
+df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_boruta/imputed.csv", delimiter=",")
 df = df.set_index("SAMPLENUMBER")
 print(df)
 
@@ -32,6 +32,10 @@ for i in ["BB125", "BB126", "BB127", "BB132"]:
 
 df["AQ_sum"] = df_AQ.sum(axis=1)
 print("第2回AQ合計\n", df["AQ_sum"])
+df = df.drop(["BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132"], axis=1)
+df = df.drop(columns=["CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"])
+df = df.drop(columns=["DD64_1", "DD65_1", "DD66_1", "DD67_1", "DD68_1", "DD69_1", "DD70_1", "DD71_1", "DD72_1"])
+df = df.drop(columns=["BB39", "BB56", "BB57", "BB73", "BB83", "BB95", "BB96", "BB116", "OCS_sum"])
 
 y = df["OCS_0or1"]
 print(y)
@@ -62,7 +66,7 @@ X.drop(X.columns[del_var_num], axis=1, inplace=True)
 print(X.shape)
 print(X.head())
 
-Y_train, Y_test, X_train, X_test = train_test_split(y, X, test_size=0.3)
+Y_train, Y_test, X_train, X_test = train_test_split(y, X, test_size=0.3, stratify=y)
 
 rf = RandomForestClassifier(
     n_estimators=5000,
@@ -96,7 +100,7 @@ feat_selector = BorutaPy(rf,
                          verbose=2,
                          alpha=0.05,  # 有意水準
                          max_iter=100,  # 試行回数
-                         perc=90,  # perc,  # ランダム生成変数の重要度の何％を基準とするか
+                         perc=100,  # perc,  # ランダム生成変数の重要度の何％を基準とするか
                          two_step=False,  # two_stepがない方、つまりBonferroniを用いたほうがうまくいく
                          random_state=0
                          )
