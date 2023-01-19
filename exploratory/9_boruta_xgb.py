@@ -12,7 +12,7 @@ from multiprocessing import cpu_count
 from dcekit.variable_selection import search_high_rate_of_same_values, search_highly_correlated_variables
 import xgboost as xgb
 
-df = pd.read_table("df_3rd_imp.csv", delimiter=",")
+df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_boruta/binary_3rd.csv", delimiter=",")
 df = df.set_index("SAMPLENUMBER")
 print(df)
 
@@ -22,7 +22,7 @@ print(y)
 X = df.drop(["group_3rd"], axis=1)
 
 # 参照！！：https://datadriven-rnd.com/2021-02-03-231858/
-
+"""
 # 分散が０の変数削除
 del_num1 = np.where(X.var() == 0)
 X = X.drop(X.columns[del_num1], axis=1)
@@ -41,17 +41,17 @@ for col in X.columns:
     rate_of_same_value.append(float(same_value_number[same_value_number.index[0]] / X.shape[0]))
 del_var_num = np.where(np.array(rate_of_same_value) >= threshold_of_rate_of_same_value)
 X.drop(X.columns[del_var_num], axis=1, inplace=True)
-
+"""
 print(X.shape)
 print(X.head())
 
-Y_train, Y_test, X_train, X_test = train_test_split(y, X, test_size=0.3)
+Y_train, Y_test, X_train, X_test = train_test_split(y, X, test_size=0.2, stratify=y, random_state=0)
 print("X_train", X_train)
 print("X_test", X_test)
 print("Y_train", Y_train)
 print("Y_test", Y_test)
 rf = RandomForestClassifier(
-    n_estimators=10000,
+    n_estimators=1000,
     random_state=42,
     n_jobs=int(cpu_count() / 2),
     max_depth=7,
@@ -82,7 +82,7 @@ feat_selector = BorutaPy(rf,
                          verbose=2,
                          alpha=0.05,  # 有意水準
                          max_iter=100,  # 試行回数
-                         perc=90,  # perc,  # ランダム生成変数の重要度の何％を基準とするか
+                         perc=80,  # perc,  # ランダム生成変数の重要度の何％を基準とするか
                          two_step=False,  # two_stepがない方、つまりBonferroniを用いたほうがうまくいく
                          random_state=0
                          )
@@ -128,7 +128,7 @@ evals = [(xgb_train, 'train'), (xgb_eval, 'eval')]  # 学習に用いる検証�
 evaluation_results = {}  # 学習の経過を保存する箱
 bst = xgb.train(xgb_params,  # 上記で設定したパラメータ
                 xgb_train,  # 使用するデータセット
-                num_boost_round=10000,  # 学習の回数
+                num_boost_round=1000,  # 学習の回数
                 early_stopping_rounds=10,  # アーリーストッピング
                 evals=evals,  # 学習経過で表示する名称
                 evals_result=evaluation_results,  # 上記で設定した検証用データ

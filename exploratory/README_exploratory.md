@@ -52,6 +52,6 @@
 ｜
 
 ・
-5d_optuna.py
+5e_optuna2.py
 
 　5cに使うハイパーパラメータの最適化
