@@ -1,17 +1,17 @@
 import sys
 
-import shap
-import sklearn.neighbors._base
-
-sys.modules['sklearn.neighbors.base'] = sklearn.neighbors._base
+import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from boruta import BorutaPy
 from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.model_selection import train_test_split
 from multiprocessing import cpu_count
+import shap
+import sklearn.neighbors._base
+sys.modules['sklearn.neighbors.base'] = sklearn.neighbors._base
 
-# from dcekit.variable_selection import search_high_rate_of_same_values, search_highly_correlated_variables
+from dcekit.variable_selection import search_high_rate_of_same_values, search_highly_correlated_variables
 
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_boruta/imputed.csv", delimiter=",")
 df = df.set_index("SAMPLENUMBER")
@@ -35,7 +35,7 @@ print("第2回AQ合計\n", df["AQ_sum"])
 df = df.drop(["BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132"], axis=1)
 df = df.drop(columns=["CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"])
 df = df.drop(columns=["DD64_1", "DD65_1", "DD66_1", "DD67_1", "DD68_1", "DD69_1", "DD70_1", "DD71_1", "DD72_1"])
-df = df.drop(columns=["BB39", "BB56", "BB57", "BB73", "BB83", "BB95", "BB96", "BB116", "OCS_sum"])
+df = df.drop(columns=["OCS_sum", "BB39", "BB56", "BB57", "BB73", "BB83", "BB95", "BB96", "BB116"])
 
 y = df["OCS_0or1"]
 print(y)
@@ -43,7 +43,7 @@ print(y)
 X = df.drop(["OCS_0or1"], axis=1)
 
 # 参照！！：https://datadriven-rnd.com/2021-02-03-231858/
-"""
+
 # 分散が０の変数削除
 del_num1 = np.where(X.var() == 0)
 X = X.drop(X.columns[del_num1], axis=1)
@@ -62,18 +62,18 @@ for col in X.columns:
     rate_of_same_value.append(float(same_value_number[same_value_number.index[0]] / X.shape[0]))
 del_var_num = np.where(np.array(rate_of_same_value) >= threshold_of_rate_of_same_value)
 X.drop(X.columns[del_var_num], axis=1, inplace=True)
-"""
+
 print(X.shape)
 print(X.head())
 
-Y_train, Y_test, X_train, X_test = train_test_split(y, X, test_size=0.3, stratify=y)
+Y_train, Y_test, X_train, X_test = train_test_split(y, X, test_size=0.3, stratify=y, random_state=0)
 
 rf = RandomForestClassifier(
-    n_estimators=5000,
+    n_estimators=10000,
     random_state=42,
-    n_jobs=int(cpu_count() / 2),
+    n_jobs=int(cpu_count()*2 / 3),
     max_depth=7,
-    max_features='sqrt'
+    max_features=1.0
 )
 rf.fit(X_train.values, Y_train.values)
 print(rf.classes_)
@@ -82,6 +82,7 @@ print("before boruta\n", accuracy_score(Y_test, rf.predict(X_test)))
 
 """
 # pパーセンタイルの最適化
+
 corr_list = []
 for n in range(10000):
     shadow_features = np.random.rand(X_train.shape[0]).T
@@ -100,9 +101,9 @@ feat_selector = BorutaPy(rf,
                          verbose=2,
                          alpha=0.05,  # 有意水準
                          max_iter=100,  # 試行回数
-                         perc=100,  # perc,  # ランダム生成変数の重要度の何％を基準とするか
+                         perc=80,  # perc,  # ランダム生成変数の重要度の何％を基準とするか
                          two_step=False,  # two_stepがない方、つまりBonferroniを用いたほうがうまくいく
-                         random_state=0
+                         random_state=0,
                          )
 
 # データの二度漬けになるので特徴量選択する際にもtestを含めてはいけない
@@ -110,17 +111,17 @@ feat_selector.fit(X_train.values, Y_train.values)
 X_train_selected = X_train.iloc[:, feat_selector.support_]
 X_test_selected = X_test.iloc[:, feat_selector.support_]
 print('boruta後の変数の数:', X_train_selected.shape[1])
-
+print(X_train_selected.columns)
 rf2 = RandomForestClassifier(
-    n_estimators=5000,
-    random_state=42,
-    n_jobs=int(cpu_count() / 2),
-    max_features='sqrt'
+    n_estimators=10000,
+    random_state=0,
+    n_jobs=int(cpu_count()*2 / 3),
+    max_features=1.0
 )
 rf2.fit(X_train_selected.values, Y_train.values)
 
 print(rf2.classes_)
-print(confusion_matrix(Y_test.values, rf2.predict(X_test_selected.values), labels=rf.classes_))
+print(confusion_matrix(Y_test.values, rf2.predict(X_test_selected.values), labels=rf2.classes_))
 print("after boruta\n", accuracy_score(Y_test, rf2.predict(X_test_selected)))
 
 # shap valueで評価（時間がかかる）

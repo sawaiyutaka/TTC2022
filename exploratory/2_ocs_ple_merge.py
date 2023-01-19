@@ -113,7 +113,7 @@ print("set_indexがなされているか？\n", df4grf)
 data4grf = df4grf.drop(["AA1YEAR", "AA1MONTH", "AA1DAY", "AA1age",
                         "VS1", "VS2D", "VS2M", "VS2Y", "VS3", "VS4", "VS5", "VS6", "VS7"], axis=1)
 
-print("s回答日、回答時点の月齢は削除、調査員番号や調査員訪問日を削除\n", data4grf)
+print("回答日、回答時点の月齢は削除、調査員番号や調査員訪問日を削除\n", data4grf)
 data4grf.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_boruta/data4grf_before_impute.csv")
 # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
 
