@@ -113,3 +113,42 @@ It's important to note that this is just an example and it should be adjusted an
 problem and dataset. Also, you can use different models and oversampling techniques or even use a combination of 
 different techniques. 
 """
+
+# Import necessary libraries
+from econml.causal_forest import CausalForest
+from econml.dml import DML
+from econml.helper import select_relevant_features
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import make_scorer
+from sklearn.pipeline import Pipeline
+
+# Load your dataset
+X, y, treatment, estimand = ...
+
+# Define the pipeline with the variable selection and the model
+pipe = Pipeline([('variable_selection', select_relevant_features),
+                 ('model', DML(estimator=CausalForest()))])
+
+# Define the scoring metric
+scoring = {'estimand': make_scorer(estimand.estimate)}
+
+# Perform cross-validation and evaluate the performance of the model
+scores = cross_val_score(pipe, X, y, treatment, cv=5, scoring=scoring, n_jobs=-1,
+                         return_train_score=True)
+
+# Print the results
+print("Estimand: %0.2f (+/- %0.2f)" % (scores['test_estimand'].mean(), scores['test_estimand'].std()))
+
+"""
+In this example, we use the class DML from EconML package that allows to use any model that conforms to the 
+scikit-learn estimator interface. Here we use CausalForest that is an implementation of the causal forest algorithm. 
+The rest of the code is the same as before, we first define the pipeline with the variable selection step and the 
+model (CausalForest), then we define the scoring metric, here we use the estimand, which is the target variable in 
+causal inference. Next, we perform cross-validation using the cross_val_score function, and pass the pipeline, 
+dataset, treatment variable, number of folds (cv=5) and the scoring metric. The cross_val_score function returns the 
+scores for each fold, then we calculate the mean and standard deviation of the scores and print the results. 
+
+It's important to note that CausalForest is an ensemble method that uses many decision trees to estimate the 
+treatment effect and it has been shown to work well in many settings. Also, it is a good practice to use different 
+models and oversampling techniques or even use a combination of different techniques. 
+"""
