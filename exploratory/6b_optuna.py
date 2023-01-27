@@ -3,8 +3,8 @@ from multiprocessing import cpu_count
 
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import accuracy_score, make_scorer
+from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold, cross_validate
 import optuna
 
 
@@ -23,22 +23,34 @@ def objective(trial):
         # min_samples_split=min_samples_split,
         # max_leaf_nodes=max_leaf_nodes,
         criterion=criterion,
-        n_jobs=int(cpu_count()*2 / 3))
+        random_state=0,
+        n_jobs=int(cpu_count() * 2 / 3))
 
     clf.fit(X_train, Y_train)
-    score = cross_val_score(clf, X_train, Y_train, n_jobs=int(cpu_count()*2 / 3), cv=5).mean()
+
+    skf = StratifiedKFold(n_splits=10,
+                          shuffle=True,
+                          random_state=0)
+    scoring = {'accuracy': make_scorer(accuracy_score)}
+    scores_skf = cross_validate(clf,
+                                X,  #
+                                y,
+                                cv=skf,
+                                n_jobs=int(cpu_count() / 2),
+                                scoring=scoring)
+    score = scores_skf['test_accuracy'].mean()
 
     return 1.0 - score  # accuracy_score(Y_test, clf.predict(X_test))
 
 
-df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_boruta/binary_4th.csv", delimiter=",")
+df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_boruta/binary.csv", delimiter=",")
 df = df.set_index("SAMPLENUMBER")
 print(df)
 
-y = df["group_4th"]
+y = df["group"]
 print(y)
 
-X = df.drop(["group_4th"], axis=1)
+X = df.drop(["group"], axis=1)
 
 # 参照！！：https://note.com/utaka233/n/ne71851e1d678
 
