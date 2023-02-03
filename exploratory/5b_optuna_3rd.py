@@ -12,7 +12,7 @@ def objective(trial):
     # min_samples_split = trial.suggest_int("min_samples_split", 8, 16)
     # max_leaf_nodes = int(trial.suggest_discrete_uniform("max_leaf_nodes", 4, 64, 4))
     criterion = trial.suggest_categorical("criterion", ["gini", "entropy"])
-    n_estimators = trial.suggest_int('n_estimators', 100, 2000, 50)
+    n_estimators = trial.suggest_int('n_estimators', 100, 2000, 100)
     max_depth = trial.suggest_int('max_depth', 2, 7)  # , log=True)
     max_features = trial.suggest_categorical('max_features', [1.0, 'sqrt', 'log2'])
 

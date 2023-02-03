@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from boruta import BorutaPy
 from sklearn.metrics import confusion_matrix, accuracy_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from multiprocessing import cpu_count
 import shap
 import sklearn.neighbors._base
@@ -63,6 +63,8 @@ rf.fit(X_train.values, Y_train.values)
 print(rf.classes_)
 print(confusion_matrix(Y_test.values, rf.predict(X_test.values), labels=rf.classes_))
 print("before boruta\n", accuracy_score(Y_test, rf.predict(X_test)))
+score = cross_val_score(rf, X_test, Y_test, n_jobs=int(cpu_count() / 2), cv=5).mean()
+print(score)
 
 """
 # pパーセンタイルの最適化
@@ -103,6 +105,8 @@ rf2.fit(X_train_selected.values, Y_train.values)
 print(rf2.classes_)
 print(confusion_matrix(Y_test.values, rf2.predict(X_test_selected.values), labels=rf2.classes_))
 print("after boruta\n", accuracy_score(Y_test, rf2.predict(X_test_selected)))
+score = cross_val_score(rf, X_test_selected, Y_test, n_jobs=int(cpu_count() / 2), cv=5).mean()
+print(score)
 
 # shap valueで評価（時間がかかる）
 # Fits the explainer
