@@ -31,7 +31,7 @@
 ｜
 
 ・
-5b_binary.py
+5a_binary_3rd.py
 
 　ocsカットオフ以上の内、
 
@@ -44,14 +44,18 @@
 ｜
 
 ・
-5c_boruta_binary.py
-
-　5bの0/1を弁別するrandomforestclassifierを作成
-　borutaで変数選択
-
-｜
-
-・
-5e_optuna2.py
+5b_optuna_3rd.py
 
 　5cに使うハイパーパラメータの最適化
+
+
+5c_boruta_binary_3rd.py
+
+　5aんぽ0/1を弁別するrandomforestclassifierを作成
+　borutaで変数選択
+
+
+
+
+6以降は却下
+PLEのみ、強迫のみでは分類期が役立たない
