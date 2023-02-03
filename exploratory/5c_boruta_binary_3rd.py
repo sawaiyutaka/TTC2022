@@ -47,13 +47,13 @@ X.drop(X.columns[del_var_num], axis=1, inplace=True)
 print(X.shape)
 print(X.head())
 
-Y_train, Y_test, X_train, X_test = train_test_split(y, X, test_size=0.3, stratify=y, random_state=0)
+Y_train, Y_test, X_train, X_test = train_test_split(y, X, test_size=0.2, stratify=y, random_state=0)
 
 rf = RandomForestClassifier(
-    n_estimators=1000,
+    n_estimators=450,
     criterion="entropy",
-    max_depth=7,
-    max_features=1.0,
+    max_depth=4,
+    max_features='log2',
     n_jobs=int(cpu_count() / 2),
     random_state=0
 )
@@ -85,7 +85,7 @@ feat_selector = BorutaPy(rf,
                          verbose=2,
                          alpha=0.05,  # 有意水準
                          max_iter=100,  # 試行回数
-                         perc=90,  # perc,  # ランダム生成変数の重要度の何％を基準とするか
+                         perc=95,  # perc=95で正解率0.89,  # ランダム生成変数の重要度の何％を基準とするか
                          two_step=False,  # two_stepがない方、つまりBonferroniを用いたほうがうまくいく
                          random_state=0,
                          )
