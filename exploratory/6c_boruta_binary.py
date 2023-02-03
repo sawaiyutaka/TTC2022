@@ -62,14 +62,14 @@ print(Y_train[Y_train == 1])
 print(Y_train[Y_train == 0])
 
 rf = RandomForestClassifier(
-    n_estimators=2000,
+    n_estimators=1500,
     criterion="gini",
-    max_depth=7,
-    max_features=1.0,
+    max_depth=3,
+    max_features='sqrt',
     n_jobs=int(cpu_count() / 2),
     random_state=0
 )
-# 'criterion': 'gini', 'n_estimators': 2000, 'max_depth': 7, 'max_features': 1.0
+# {'criterion': 'gini', 'n_estimators': 1500, 'max_depth': 3, 'max_features': 'sqrt'}
 rf.fit(X_train.values, Y_train.values)
 print(rf.classes_)
 print(confusion_matrix(Y_test.values, rf.predict(X_test.values), labels=rf.classes_))
