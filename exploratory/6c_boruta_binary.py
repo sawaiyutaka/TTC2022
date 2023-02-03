@@ -26,6 +26,7 @@ X = df.drop(["group"], axis=1)
 print(X.shape)
 print(X.head())
 
+"""
 # 分散が０の変数削除
 del_num1 = np.where(X.var() == 0)
 X = X.drop(X.columns[del_num1], axis=1)
@@ -44,7 +45,7 @@ for col in X.columns:
     rate_of_same_value.append(float(same_value_number[same_value_number.index[0]] / X.shape[0]))
 del_var_num = np.where(np.array(rate_of_same_value) >= threshold_of_rate_of_same_value)
 X.drop(X.columns[del_var_num], axis=1, inplace=True)
-
+"""
 print('Original dataset shape %s' % Counter(y))
 
 rus = RandomUnderSampler(random_state=42)
@@ -126,7 +127,7 @@ feat_selector = BorutaPy(rf,
                          verbose=2,
                          alpha=0.05,  # 有意水準
                          max_iter=100,  # 試行回数
-                         perc=90,  # perc,  # ランダム生成変数の重要度の何％を基準とするか
+                         perc=95,  # perc,  # ランダム生成変数の重要度の何％を基準とするか
                          two_step=False,  # two_stepがない方、つまりBonferroniを用いたほうがうまくいく
                          random_state=0,
                          )
