@@ -1,0 +1,15 @@
+1. main.py 先行文献の知識で交絡因子に入れたものを読み込み
+
+2. OC_PLE_prep.py 第2期OCS、第3期、第4期PLEを読み込み
+
+3. NaN_check.py 欠損値の割合で変数選択
+
+4. 削除
+
+5. X_T_Y_prep.py Xを整える
+
+6a, 6b. GRF_xxx.py 因果推論
+
+TODO
+exploratoryで検索した交絡因子を入れる
+チックはひとまとめにする
