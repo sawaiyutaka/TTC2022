@@ -2,6 +2,7 @@
 from multiprocessing import cpu_count
 
 import pandas as pd
+from imblearn.under_sampling import RandomUnderSampler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, make_scorer
 from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold, cross_validate
@@ -12,7 +13,7 @@ def objective(trial):
     # min_samples_split = trial.suggest_int("min_samples_split", 8, 16)
     # max_leaf_nodes = int(trial.suggest_discrete_uniform("max_leaf_nodes", 4, 64, 4))
     criterion = trial.suggest_categorical("criterion", ["gini", "entropy"])
-    n_estimators = trial.suggest_int('n_estimators', 100, 2000, 50)
+    n_estimators = trial.suggest_int('n_estimators', 100, 2000, 200)
     max_depth = trial.suggest_int('max_depth', 2, 7)  # , log=True)
     max_features = trial.suggest_categorical('max_features', [1.0, 'sqrt', 'log2'])
 
@@ -57,13 +58,22 @@ X = df.drop(["group"], axis=1)
 print(X.shape)
 print(X.head())
 
-Y_train, Y_test, X_train, X_test = train_test_split(y, X, test_size=0.2, stratify=y, random_state=0)
+rus = RandomUnderSampler(random_state=42)
+X_res, y_res = rus.fit_resample(X, y)
+
+Y_train, Y_test, X_train, X_test = train_test_split(y_res, X_res, test_size=0.2, stratify=y_res, random_state=0)
 print("Y_train", Y_train)
 print("Y_test", Y_test)
 
+# Apply RandomUnderSampler to undersample the majority class
+rus = RandomUnderSampler(sampling_strategy='auto', random_state=42)
+X_train, Y_train = rus.fit_resample(X_train, Y_train)
+print(X_train.shape)
+print(X_train.head())
+
 # ハイパーパラメータの自動最適化
 study = optuna.create_study()
-study.optimize(objective, n_trials=2000)
+study.optimize(objective, n_trials=200)
 
 print(study.best_params)  # 求めたハイパーパラメータ
 print("正答率: ", 1.0 - study.best_value)

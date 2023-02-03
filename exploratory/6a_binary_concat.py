@@ -9,8 +9,9 @@ df0 = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_boruta/imputed.csv", delim
 df0 = df0.set_index("SAMPLENUMBER")
 print(df0)
 
-df0 = df0[df0['OCS_0or1'] == 1]
-print(df0)
+# OCSのみ抽出
+# df0 = df0[df0['OCS_0or1'] == 1]
+# print(df0)
 
 # 第2期のocsを除外
 df0 = df0.drop(
@@ -35,13 +36,13 @@ print("第2回AQ合計\n", df0["AQ_sum"])
 # 第２期のAQ素点を除外
 df = df0.drop(["BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132"], axis=1)
 
-"""
+
 # 1つでも「1回あった」があった人をPLEありとする
 df_ple = df[
-    (df['CD57_1'] > 1) | (df['CD58_1'] > 1) | (df['CD59_1'] > 1) | (df['CD60_1'] > 1) | (df['CD61_1'] > 1)
-    | (df['CD62_1'] > 1) | (df['CD63_1'] > 1) | (df['CD64_1'] > 1) | (df['CD65_1'] > 1) |
-    (df['DD64_1'] > 1) | (df['DD65_1'] > 1) | (df['DD66_1'] > 1) | (df['DD67_1'] > 1) | (df['DD68_1'] > 1)
-    | (df['DD69_1'] > 1) | (df['DD70_1'] > 1) | (df['DD71_1'] > 1) | (df['DD72_1'] > 1)
+    (df['CD57_1'] > 3) | (df['CD58_1'] > 3) | (df['CD59_1'] > 3) | (df['CD60_1'] > 3) | (df['CD61_1'] > 3)
+    | (df['CD62_1'] > 3) | (df['CD63_1'] > 3) | (df['CD64_1'] > 3) | (df['CD65_1'] > 3) |
+    (df['DD64_1'] > 3) | (df['DD65_1'] > 3) | (df['DD66_1'] > 3) | (df['DD67_1'] > 3) | (df['DD68_1'] > 3)
+    | (df['DD69_1'] > 3) | (df['DD70_1'] > 3) | (df['DD71_1'] > 3) | (df['DD72_1'] > 3)
     ].copy()
 print(df_ple)
 df_ple["group"] = 1
@@ -97,13 +98,14 @@ df_4th = pd.concat([df_ple_4th, df_non_4th])
 print("df_4th", df_4th)
 
 df_concat = pd.concat([df_3rd, df_4th])
-
+"""
 
 # PLE素点を除外
 df_concat = df_concat.drop(
     ["DD64_1", "DD65_1", "DD66_1", "DD67_1", "DD68_1", "DD69_1", "DD70_1", "DD71_1", "DD72_1",
      "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1"],
     axis=1)
+print(df_concat)
 
 """
 # PLEの合計点を作成(第3期)
@@ -121,5 +123,4 @@ df_3rd = df_3rd.drop(["AB71", "AB87", "AB88", "AB104", "AB114", "AB126", "AB127"
 df_3rd = df_3rd.drop(["AD57", "AD58", "AD59", "AD60", "AD61", "AD62"], axis=1)
 """
 
-print("df_concat", df_concat)
 df_concat.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_boruta/binary.csv")

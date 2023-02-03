@@ -1,5 +1,6 @@
 import pprint
 import sys
+from collections import Counter
 
 import numpy as np
 import pandas as pd
@@ -10,11 +11,9 @@ from sklearn.metrics import confusion_matrix, accuracy_score, make_scorer, cohen
 from sklearn.model_selection import train_test_split, cross_val_score, cross_validate, KFold, StratifiedKFold
 from multiprocessing import cpu_count
 import shap
-import sklearn.neighbors._base
-
-sys.modules['sklearn.neighbors.base'] = sklearn.neighbors._base
-
 from dcekit.variable_selection import search_high_rate_of_same_values, search_highly_correlated_variables
+from imblearn.over_sampling import SMOTE
+from imblearn.under_sampling import RandomUnderSampler
 
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_boruta/binary.csv", delimiter=",")
 df = df.set_index("SAMPLENUMBER")
@@ -46,17 +45,27 @@ for col in X.columns:
 del_var_num = np.where(np.array(rate_of_same_value) >= threshold_of_rate_of_same_value)
 X.drop(X.columns[del_var_num], axis=1, inplace=True)
 
-print(X.shape)
-print(X.head())
+print('Original dataset shape %s' % Counter(y))
+
+rus = RandomUnderSampler(random_state=42)
+X_res, y_res = rus.fit_resample(X, y)
+print('Resampled dataset shape %s' % Counter(y_res))
 
 # 参照！！：https://datadriven-rnd.com/2021-02-03-231858/
-Y_train, Y_test, X_train, X_test = train_test_split(y, X, test_size=0.2, stratify=y, random_state=0)
+Y_train, Y_test, X_train, X_test = train_test_split(y_res, X_res, test_size=0.2, stratify=y_res, random_state=0)
+
+# Apply RandomUnderSampler to undersample the majority class
+rus = RandomUnderSampler(sampling_strategy='auto', random_state=42)
+X_train, Y_train = rus.fit_resample(X_train, Y_train)
+print("Yの0/1が同数になるようにアンダーサンプリング：", X_train.shape)
+print(Y_train[Y_train == 1])
+print(Y_train[Y_train == 0])
 
 rf = RandomForestClassifier(
     n_estimators=2000,
-    criterion="entropy",
-    max_depth=4,
-    max_features='log2',
+    criterion="gini",
+    max_depth=7,
+    max_features=1.0,
     n_jobs=int(cpu_count() / 2),
     random_state=0
 )
