@@ -1,9 +1,12 @@
+from multiprocessing import cpu_count
+
 import pandas as pd
 import numpy as np
 import seaborn as s
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 # from sklearn.linear_model import LassoCV
+from sklearn.linear_model import LassoCV
 from sklearn.model_selection import train_test_split
 from econml.dml import CausalForestDML
 import shap
@@ -14,7 +17,8 @@ sys.modules['sklearn.neighbors.base'] = sklearn.neighbors._base
 
 from missingpy import MissForest
 
-# imputeした後のデータフレーム、PLEとAQの合計得点前
+
+# impute前のデータフレーム
 df = pd.read_table("test4.csv", delimiter=",")
 df = df.set_index("SAMPLENUMBER")
 print(df)
@@ -39,10 +43,20 @@ print("df_Y\n", df_Y)
 df["PLE_sum_3rd"] = df_Y.sum(axis=1)
 print("第3回PLE合計\n", df["PLE_sum_3rd"])
 
-Y = df['PLE_sum_3rd']  # 'CD65_1'などとすると、単一項目で見られる
+df.to_csv("3rd_X_T_Y.csv")
+"""
+
+df = pd.read_table("3rd_X_T_Y.csv", delimiter=",")
+df = df.set_index("SAMPLENUMBER")
+"""
+
+df = df[df["PLE_sum_3rd"] > 9].copy()
+
+Y = df["PLE_sum_3rd"]  # df['PLE_sum_3rd']  # 'CD60_1'(幻聴)とすると、単一項目で見られる
 print("Y\n", Y)
 
-T = df['OCS_0or1']  # 強迫CMCL5点以上であることをtreatmentとする
+T = df['OCS_0or1']  # 強迫CBCL5点以上であることをtreatmentとする
+print("OCSあり: \n", T.sum())  # 41
 
 # Y, Tを除外
 X = df.drop(['PLE_sum_3rd', 'OCS_0or1'], axis=1)
@@ -52,19 +66,7 @@ X = X.drop(["CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1"
 
 # 第4期のPLEを除外
 X = X.drop(["DD64_1", "DD65_1", "DD66_1", "DD67_1", "DD68_1", "DD69_1", "DD70_1", "DD71_1", "DD72_1"], axis=1)
-
-# 第２期の強迫を除外
-X = X.drop(["BB39", "BB56", "BB57", "BB73", "BB83", "BB95", "BB96", "BB116", "OCS_sum"], axis=1)
-
-# 第２期のAQ素点を除外
-X = X.drop(["BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132"], axis=1)
-
-print(X)
-
-# 第1期の強迫、PLEを除外
-X = X.drop(["AB71", "AB87", "AB88", "AB104", "AB114", "AB126", "AB127", "AB145"], axis=1)
-X = X.drop(["AD57", "AD58", "AD59", "AD60", "AD61", "AD62"], axis=1)
-X.to_csv("X_3rd.csv")
+print("X:\n", X)
 
 # https://github.com/microsoft/EconML/blob/main/notebooks/Generalized%20Random%20Forests.ipynb
 # 1. Causal Forest: Heterogeneous causal effects with no unobserved confounders
@@ -89,6 +91,17 @@ est = CausalForestDML(criterion='mse',
                                                      min_samples_split=5,
                                                      min_samples_leaf=1,
                                                      n_estimators=1000,
+                                                     n_jobs=int(cpu_count() / 2),
+                                                     random_state=42),
+                      model_y=LassoCV(),
+                      n_jobs=int(cpu_count() / 2),
+                      random_state=42)
+
+"""                   model_t=RandomForestClassifier(max_depth=None,
+                                                     max_features='sqrt',
+                                                     min_samples_split=5,
+                                                     min_samples_leaf=1,
+                                                     n_estimators=1000,
                                                      # n_jobs=15,
                                                      # number of jobs to run in parallel(-1 means using all processors)
                                                      random_state=2525),  # LassoCV(max_iter=100000),
@@ -100,8 +113,7 @@ est = CausalForestDML(criterion='mse',
                                                     n_estimators=2000,
                                                     # n_jobs=15,
                                                     random_state=2525),  # LassoCV(max_iter=100000),
-                      # n_jobs=15,
-                      random_state=2525)
+"""
 
 # fit train data to causal forest model
 est.fit(Y, T, X=X, W=W)
@@ -133,16 +145,6 @@ print(df2)
 
 df2.to_csv("test_importance_3rd_sort.csv")
 
-'''
-# 半分に分割してテスト
-# test1
-X_test1 = X.iloc[:int(n_samples / 2), :]
-# test2
-X_test2 = X.iloc[int(n_samples / 2):n_samples, :]
-
-print("X_test1: \n", X_test1)
-print("X_test2: \n", X_test2)
-'''
 # treatment effectを計算
 te_pred = est.effect(X, T0=0, T1=1)
 lb, ub = est.effect_interval(X, T0=0, T1=1, alpha=0.05)
@@ -175,13 +177,7 @@ ax.plot(z['ub'],
 ax.set_ylabel('Treatment Effects')
 ax.set_xlabel('Number of observations (3rd)')
 ax.legend()
-plt.show()
-
-'''
-# X_testのみでCATEを計算
-te_pred_test1 = est.effect(X_test1)
-te_pred_test2 = est.effect(X_test2)
-'''
+# plt.show()
 
 print("te_pred: \n", te_pred)
 print("要素数", len(te_pred))
@@ -203,28 +199,12 @@ df_lower = df_new[(df_new["te_pred"] < lower)]  # CATE下位10%
 print("upper＝影響を受けやすかった5%: \n", df_upper)
 print("lower＝影響を受けにくかった5%: \n", df_lower)
 
-"""
-all_1st = pd.read_table("test1.csv", delimiter=",", low_memory=False)
-all_1st = all_1st.set_index("SAMPLENUMBER")
-
-print("df_upper_3rd\n", df_upper.describe())
-cols_to_use = all_1st.columns.difference(df_upper.columns)
-
-print("第１期量的データにあって、upper, lowerに含まれない項目を検出\n", cols_to_use)
-upper = df_upper.join([all_1st[cols_to_use]], how='inner')
-print("df_upper_3rd\n", upper.describe())
-
-print("df_lower_3rd\n", df_lower.describe())
-lower = df_lower.join([all_1st[cols_to_use]], how='inner')
-print("df_lower_3rd\n", lower.describe())
-"""
-
 df_upper["group"] = 2
 df_lower["group"] = 1
 
 df_third = pd.concat([df_upper, df_lower])  # pd.merge(df1, df2, left_index=True, right_index=True)
 print(df_third)
-df_third.to_csv("third_UL.csv")
+df_third.to_csv("3rd_upper_lower.csv")
 
 # CATE(全体)
 s.set()
@@ -232,23 +212,13 @@ s.displot(te_pred)
 # plt.savefig("/Volumes/Pegasus32R8/TTC/202211/cate_4th.svg")
 plt.show()
 
-'''
-# CATE(前半)
-s.displot(te_pred_test1)
-plt.show()
-
-# CATE(後半)
-s.displot(te_pred_test2)
-plt.show()
-'''
-
 # https://towardsdatascience.com/causal-machine-learning-for-econometrics-causal-forests-5ab3aec825a7
 # ★['Y0']にはアウトカムを、['T0']にはtreatmentを入れる！
 plt.figure()
 # calculate shap values of causal forest model
 shap_values = est.shap_values(X)
 # plot shap values
-shap.summary_plot(shap_values['PLE_sum_3rd']['OCS_0or1'], max_display=31)
+shap.summary_plot(shap_values['PLE_sum_3rd']['OCS_0or1'], max_display=len(X.columns))
 
 # Note that the structure of this estimator is based on the BaseEstimator and RegressorMixin from sklearn; however,
 # here we predict treatment effects –which are unobservable– hence regular model validation and model selection

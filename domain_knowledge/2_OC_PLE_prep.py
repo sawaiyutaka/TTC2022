@@ -46,9 +46,21 @@ print("強迫症状カットオフ以上\n", oc_pos.sum())  # 5点以上だと11
 oc_2nd["OCS_0or1"] = (oc_2nd["OCS_sum"] > OCS_CUT_OFF) * 1.0
 print("OCS_0or1\n", oc_2nd)  # 第２期にOC欠損値なしは2733行
 
+# ★第1期にOCがない人を抽出★
+oc_1st = oc_ple[["AB71", "AB87", "AB88", "AB104", "AB114", "AB126", "AB127", "AB145"]]
+print("第1期のOC\n", oc_1st)
+print("NaN個数\n", oc_1st.isnull().sum())
+oc_1st = oc_1st.dropna(how='any')  # ★強迫症状の項目にNaNを含むもの削除
+oc_1st["OCS_1st_sum"] = oc_1st.sum(axis=1)
+print("第1期にOC欠損値なし\n", oc_1st)
+
+oc_naive = (oc_1st["OCS_1st_sum"] <= OCS_CUT_OFF)
+print("第1期強迫症状カットオフ未満\n", oc_naive.sum())
+
+
 # AQ
 aq_2nd = oc_ple[["BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132"]]
-print(aq_2nd)
+print("第2期AQ素点", aq_2nd)
 
 # 第3期PLEのデータフレーム
 ple = oc_ple.filter(like='_1', axis=1)
@@ -90,7 +102,7 @@ print("NaN個数\n", ple_neg_oc.isnull().sum(axis=0))  # 対象者に第1期でP
 
 cols_to_use = first.columns.difference(ple_neg_oc.columns)
 print("第１期量的データにあって、PLEやOCSに含まれない項目を検出\n", cols_to_use)
-df4grf = ple_neg_oc.join([first[cols_to_use], base_1st, aq_2nd, ple_3rd, ple_4th], how='inner')
+df4grf = ple_neg_oc.join([first[cols_to_use], base_1st, oc_naive, aq_2nd, ple_3rd, ple_4th], how='inner')
 print("set_indexがなされているか？\n", df4grf)
 df4grf.to_csv("test2.csv")
 # 共変数から文字列を含む列、PLEの_2、baseに含まれる列を削除したもの
