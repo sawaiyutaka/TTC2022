@@ -39,6 +39,7 @@ for file in files:
 oc_ple = pd.concat(ls, axis=1, join='inner')
 print(oc_ple)
 
+
 # 第２期のOC
 # 強迫の人数(cut off 5以上)
 oc_2nd = oc_ple[["BB39", "BB56", "BB57", "BB73", "BB83", "BB95", "BB96", "BB116"]]  # 8項目ver
@@ -87,16 +88,18 @@ print(df.head())
 df_PLE = df[["AD57", "AD58", "AD59", "AD60", "AD61", "AD62", "AD63"]]
 print("df_PLE\n", df_PLE)
 print("NaN個数\n", df_PLE.isnull().sum(axis=0))
-ple_1st_pos = (df_PLE != 1.0)
-print("'Yes, definitely'でないところをTRUE\n", ple_1st_pos)
+ple_1st_pos = (df_PLE == 1.0)
+print("Yes, definitelyの回答をTRUEに置換\n", ple_1st_pos)
 print("1回目調査でPLEが「Yes, definitely」\n", ple_1st_pos.sum())
 print("ple_1st_pos\n", df_PLE[ple_1st_pos])
+ple_pos = df_PLE[ple_1st_pos].dropna(how='all')
+print("1回目調査でPLEがYes. definitelyが１つでもある\n", ple_pos)
 # ple_negと排反になることを確認
 
 ple_1st_neg = ((df_PLE == 3.0) | (df_PLE == 2.0))
-print("ple_1st_neg\n", ple_1st_neg)
+print("PLE 2か3をTRUEに", ple_1st_neg)
 print("1回目調査でPLEなしの人数\n", ple_1st_neg.sum())
-print(df_PLE[ple_1st_neg])
+print("ple_1st_neg\n", df_PLE[ple_1st_neg])
 ple_neg = df_PLE[ple_1st_neg].dropna(how='any')  # ★第１期に「あったかもしれない」「なかった」を含むもののみ
 print("1回目調査でPLEなし\n", ple_neg)
 

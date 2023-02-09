@@ -30,6 +30,8 @@ def objective(trial):
     score = cross_val_score(clf, X_train, Y_train, n_jobs=int(cpu_count() * 2 / 3), cv=5).mean()
 
     return 1.0 - score  # accuracy_score(Y_test, clf.predict(X_test))
+    # {'criterion': 'entropy', 'n_estimators': 1100, 'max_depth': 2, 'max_features': 'log2'}
+    # 正答率:  0.5904761904761904
 
 
 df = pd.read_table("/Volumes/Pegasus32R8/TTC/2022csv_boruta/binary_3rd.csv", delimiter=",")
