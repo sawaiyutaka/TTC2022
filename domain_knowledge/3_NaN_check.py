@@ -6,21 +6,21 @@ import pandas as pd
 import seaborn as s
 from matplotlib import pyplot as plt
 
-NUM_0F_NAN = int(1844 * 0.01)  # 欠損値が何人未満の項目を使うか
-
 # 現在の最大表示列数の出力
 # pd.get_option("display.max_columns")
 
 # 最大表示列数の指定（ここでは50列を指定）
 # pd.set_option('display.max_columns', 50)
 
-data4grf = pd.read_table("test2.csv",
+data4grf = pd.read_table("/Volumes/Pegasus32R8/TTC/2022domain/data4nan_check.csv",
                          delimiter=",", low_memory=False)
 data4grf = data4grf.set_index("SAMPLENUMBER")
 print(data4grf)
 
-print("NaN個数\n", data4grf.isnull().sum())
+NUM_0F_NAN = int(len(data4grf.index) * 0.1)  # 欠損値が何人未満の項目を使うか
 
+print("NaN個数\n", data4grf.isnull().sum())
+print("NaN個数\n", data4grf["BB123"].isnull().sum())
 # 第3期と第4期のPLEは分けておく
 outcome = data4grf.filter(regex='^(C|D)', axis=1)
 print(outcome)
@@ -51,8 +51,9 @@ plt.show()
 
 # アウトカム(第3期、第4期)と結合
 df2 = pd.merge(df1, outcome, left_index=True, right_index=True)
+df2 = df2.drop(["AA225"], axis=1)  # 文字列を含む列を削除
 print(df2)
-df2.to_csv("test3.csv")
+df2.to_csv("/Volumes/Pegasus32R8/TTC/2022domain/data4grf_before_imp.csv")
 
 
 
