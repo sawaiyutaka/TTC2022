@@ -100,7 +100,7 @@ print("第１期でOCSが閾値以下の人\n", df)
 df = df.drop(["AB71", "AB87", "AB88", "AB104", "AB114", "AB126", "AB127", "AB145"], axis=1)
 
 T = df['OCS_0or1']  # 強迫CBCL5点以上であることをtreatmentとする
-print("OCSあり: \n", T.sum())  # 41
+print("OCSあり: \n", T.sum())  # 40
 
 # Y, Tを除外
 X = df.drop(['PLE_sum_4th', 'OCS_0or1'], axis=1)
