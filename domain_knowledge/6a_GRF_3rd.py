@@ -68,6 +68,11 @@ for i in ["BB125", "BB126", "BB127", "BB132"]:
 df["AQ_sum"] = df_AQ.sum(axis=1)
 print("第2回AQ合計\n", df["AQ_sum"])
 
+# 1つでも「1回以上あった」があった人をPLEありとする
+df["bullied"] = 1
+df["bullied"] = df["bullied"].where((df["AB61"] < 5) | (df["AD19"] < 5), 0)
+print(df[["bullied", "AB61", "AD19"]])
+
 # 第２期のOC
 # 強迫の人数(cut off 5以上)
 oc_2nd = df[["BB39", "BB56", "BB57", "BB73", "BB83", "BB95", "BB96", "BB116"]]  # 8項目ver
@@ -105,10 +110,11 @@ print("OCSあり: \n", T.sum())  # 41
 # Y, Tを除外
 X = df.drop(['PLE_sum_3rd', 'OCS_0or1'], axis=1)
 
-X = X[["AA55", "AA56", "AA57", "AA58", "AA59", "AA60", "AA61",
-       "AB146", "AB161YOMI", "AB50", "AB51", "AB52", "AB53", "AB54", "AB55", "AB56", "AB57", "AB58",
-       "AB61", "AD18", "AD19", "AD20", "AD21", "TTC_sex", "AE1BMI", "AEIQ", "AAMedu", "AA79Fsep",
-       "AA127Respondent", "AQ_sum",
+X = X[["AA55", "AA58", "AB55", "AB58",
+       "AB146", "AB161YOMI",
+       "bullied",
+       "TTC_sex", "AE1BMI", "AEIQ", "AAMedu", "AA79Fsep", "AB195",
+       "AA127Respondent", "AQ_sum", "BR12",
        "AA110", "AB105", "AD36CPAQa_Imp", "AA165", "AA208", "AA189"]].copy()  # ★ドメイン知識で入れた項目と、探索的で入れた項目を
 """
 # 第3期のPLEを除外
@@ -240,7 +246,7 @@ s.set()
 s.displot(te_pred)
 # plt.savefig("/Volumes/Pegasus32R8/TTC/202211/cate_4th.svg")
 plt.show()
-
+"""
 # https://towardsdatascience.com/causal-machine-learning-for-econometrics-causal-forests-5ab3aec825a7
 # ★['Y0']にはアウトカムを、['T0']にはtreatmentを入れる！
 plt.figure()
@@ -248,7 +254,7 @@ plt.figure()
 shap_values = est.shap_values(X)
 # plot shap values
 shap.summary_plot(shap_values['PLE_sum_3rd']['OCS_0or1'], max_display=len(X.columns))
-
+"""
 # Note that the structure of this estimator is based on the BaseEstimator and RegressorMixin from sklearn; however,
 # here we predict treatment effects –which are unobservable– hence regular model validation and model selection
 # techniques (e.g. cross validation grid search) do not work as we can never estimate a loss on a training sample,
