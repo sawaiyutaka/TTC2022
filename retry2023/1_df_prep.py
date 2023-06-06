@@ -41,7 +41,7 @@ for file in files:
         d = d.filter(['AC81Ln(TD)'], axis=1)
     elif file == "/Volumes/Pegasus32R8/TTC/2022rawdata/150210A第二次性徴.xlsx":
         d = d.filter(regex='ImpGreater$', axis=1)
-    elif file == "/Volumes/Pegasus32R8/TTC/2022rawdata/150210A第二次性徴.xlsx":
+    elif file == "/Volumes/Pegasus32R8/TTC/2022rawdata/150212A両親アルコール.xlsx":
         d = d.filter(like='AA185CAGE', axis=1)
     elif file == "/Volumes/Pegasus32R8/TTC/2022rawdata/150212TCC_webaddiction.xlsx":
         d = d.filter(like='Webaddict', axis=1)
@@ -53,7 +53,7 @@ for file in files:
         d = d.filter(like='AB2311子CSHCN', axis=1)
     else:
         d = d.filter(regex='Imp$', axis=1)  # Impで終わる列＝欠損値１以下なら平均値で補完
-    # print(d)
+    print(d)
     lst2.append(d)
 
 # プログラム5｜listに格納されたエクセルファイルをpandasとして結合
@@ -73,14 +73,9 @@ d1 = d.filter(regex='Kind$', axis=1)  # Impで終わる列＝欠損値１以下�
 print(d1)
 d2 = 1 - d1.isna() * 1
 print(d2)
-# d2.to_csv("/Volumes/Pegasus32R8/TTC/2022csv_outcome/pet_kind.csv")
-
-d3 = pd.merge(d0, d2, left_index=True, right_index=True)
-print(d3)
-print(d3["AE10"].isnull().sum())
 
 # 第1期のデータフレーム結合
-df = pd.merge(df, d3, left_index=True, right_index=True)
+df = pd.merge(df, d2, left_index=True, right_index=True)
 df = df.loc[:, ~df.columns.duplicated()]
 print("重複を削除\n", df)
 
