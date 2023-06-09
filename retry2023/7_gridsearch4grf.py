@@ -33,11 +33,11 @@ Y_train, Y_test, T_train, T_test, X_train, X_test = train_test_split(Y, T, X, te
 
 # Yの予測に使うランダムフォレストのグリッドサーチ
 param_grid_y = {
-    'n_estimators': list(range(200, 2001, 200)),
+    'n_estimators': list(range(1000, 3001, 200)),
     'max_depth': [None, 5, 10],
     'max_features': ['sqrt'],
-    # 'min_samples_split': [2, 5, 10],
-    # 'min_samples_leaf': [1, 2, 4],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4],
     'random_state': [0]
 }
 model_y = RandomForestRegressor()
@@ -66,7 +66,7 @@ print("Test R^2:", r2)
 
 # Tの予測に使うランダムフォレストのグリッドサーチ
 param_grid_t = {
-    'n_estimators': list(range(200, 2001, 200)),
+    'n_estimators': list(range(1000, 3001, 200)),
     'max_depth': [None, 5, 10],
     'max_features': ['sqrt'],
     # 'min_samples_split': [2, 5, 10],

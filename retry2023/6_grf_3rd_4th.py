@@ -5,16 +5,8 @@ import numpy as np
 import seaborn as s
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
-# from sklearn.linear_model import LassoCV
-from sklearn.linear_model import LassoCV
 from sklearn.model_selection import train_test_split
 from econml.dml import CausalForestDML
-import shap
-import sys
-import sklearn.neighbors._base
-
-sys.modules['sklearn.neighbors.base'] = sklearn.neighbors._base
-from missingpy import MissForest
 
 OCS_CUT_OFF = 1  # 強迫のCBCLカットライン。（-「項目数」点）以下は強迫なしとする。
 
@@ -36,15 +28,9 @@ T = df['OCS_0or1']
 print("OCSあり: \n", T.sum())  # 人
 
 # Xを指定
-X = df[["AA55", "AA58", "AB55", "AB58",
-        "AB146", "AB161YOMI",
-        "bullied",
-        "TTC_sex", "AE1BMI", "AEIQ", "AB161MIQ", "AA79Fsep", "SES",
-        "AA127Respondent", "AQ_sum", "BR12",
+X = df[["TTC_sex", "AE1BMI", "AEIQ", "AB161MIQ", "AA127Respondent", "SES", "bullied", "AQ_sum",
         # exploratoryで抽出された項目
-        "AA110", "AB105",  # "AD36CPAQa_Imp", "AD36CPAQm_Imp", "AD36CPAQf_Imp",
-        "AA165", "AA208", "AA189",
-        "AD52", "AD53", "AD54", "AD55", "AD56"  # CPAQのMF尺度は合計得点を研究で使うことが少ない
+        'AA123', 'AA165', 'AB64',  # 'AE1BMI'
         ]].copy()  # ★ドメイン知識で入れた項目と、探索的で入れた項目を
 
 print("X:\n", X)
@@ -69,21 +55,21 @@ est = CausalForestDML(criterion='mse',
                       cv=10,
                       model_t=RandomForestClassifier(max_depth=None,
                                                      max_features='sqrt',
-                                                     min_samples_split=5,
-                                                     min_samples_leaf=1,
-                                                     n_estimators=1000,
+                                                     # min_samples_split=5,
+                                                     # min_samples_leaf=1,
+                                                     n_estimators=200,
                                                      n_jobs=int(cpu_count() / 2),
-                                                     random_state=42),
-                      model_y=RandomForestRegressor(max_depth=None,
+                                                     random_state=0),
+                      model_y=RandomForestRegressor(max_depth=5,
                                                     max_features='sqrt',
                                                     # The number of features to consider when looking for the best split
-                                                    min_samples_split=5,
-                                                    min_samples_leaf=1,
-                                                    n_estimators=2000,
+                                                    # min_samples_split=5,
+                                                    # min_samples_leaf=1,
+                                                    n_estimators=200,
                                                     n_jobs=int(cpu_count() / 2),
-                                                    random_state=42),
-                      n_jobs=int(cpu_count() *4 / 5),
-                      random_state=42)
+                                                    random_state=0),
+                      n_jobs=int(cpu_count() * 4 / 5),
+                      random_state=0)
 
 # fit train data to causal forest model
 est.fit(Y, T, X=X, W=W)
@@ -150,8 +136,8 @@ df_lower = df_new[(df_new["te_pred"] < lower)]  # CATE下位10%
 print("upper＝影響を受けやすかった10%: \n", df_upper)
 print("lower＝影響を受けにくかった10%: \n", df_lower)
 
-df_upper["group"] = 2
-df_lower["group"] = 1
+df_upper.loc[:, "group"] = 2
+df_lower.loc[:, "group"] = 1
 
 df_concat = pd.concat([df_upper, df_lower])
 print(df_concat)
