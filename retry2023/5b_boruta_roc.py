@@ -95,6 +95,8 @@ param_grid = {
     'random_state': [42],
     'n_jobs': [int(cpu_count() / 2)]
 }
+# best_score:  0.7798076923076923
+# best_params:  {'learning_rate': 0.2, 'max_depth': 1, 'n_estimators': 80, 'n_jobs': 18, 'random_state': 42}
 
 # rNCVでのハイパーパラメータの探索
 best_score = 0
@@ -104,7 +106,7 @@ for train_index, val_index in outer_cv.split(X, y):
     y_train, y_val = y.iloc[train_index], y.iloc[val_index]
 
     # 内側ループのCVの分割設定
-    inner_cv = StratifiedKFold(n_splits=4, shuffle=True, random_state=42)
+    inner_cv = StratifiedKFold(n_splits=4, shuffle=True)
 
     # GridSearchCVを使用して最適なハイパーパラメータを見つける
     grid_search = GridSearchCV(
@@ -159,33 +161,38 @@ def train_and_evaluate_model(X, y, model):
     aucs = []
     mean_fpr = np.linspace(0, 1, 100)
 
-    for train_index, test_index in skf_outer.split(X, y):
-        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-        y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+    # ステップ3からステップ4までの手順を指定した回数（100回）繰り返す
+    repeats = 100
 
-        skf_inner = StratifiedKFold(n_splits=4, shuffle=True, random_state=42)
+    for _ in range(repeats):
 
-        tprs_inner = []
-        aucs_inner = []
-        for train_inner_index, test_inner_index in skf_inner.split(X_train, y_train):
-            X_train_inner, X_test_inner = X_train.iloc[train_inner_index], X_train.iloc[test_inner_index]
-            y_train_inner, y_test_inner = y_train.iloc[train_inner_index], y_train.iloc[test_inner_index]
+        for train_index, test_index in skf_outer.split(X, y):
+            X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
-            model.fit(X_train_inner, y_train_inner)
-            y_pred_inner = model.predict_proba(X_test_inner)[:, 1]
+            skf_inner = StratifiedKFold(n_splits=4, shuffle=True)  # , random_state=42)
 
-            fpr, tpr, _ = roc_curve(y_test_inner, y_pred_inner)
-            tprs_inner.append(np.interp(mean_fpr, fpr, tpr))
-            tprs_inner[-1][0] = 0.0
-            roc_auc_inner = auc(fpr, tpr)
-            aucs_inner.append(roc_auc_inner)
+            tprs_inner = []
+            aucs_inner = []
+            for train_inner_index, test_inner_index in skf_inner.split(X_train, y_train):
+                X_train_inner, X_test_inner = X_train.iloc[train_inner_index], X_train.iloc[test_inner_index]
+                y_train_inner, y_test_inner = y_train.iloc[train_inner_index], y_train.iloc[test_inner_index]
 
-        mean_tpr_inner = np.mean(tprs_inner, axis=0)
-        mean_tpr_inner[-1] = 1.0
-        mean_auc_inner = np.mean(aucs_inner)
+                model.fit(X_train_inner, y_train_inner)
+                y_pred_inner = model.predict_proba(X_test_inner)[:, 1]
 
-        tprs.append(mean_tpr_inner)
-        aucs.append(mean_auc_inner)
+                fpr, tpr, _ = roc_curve(y_test_inner, y_pred_inner)
+                tprs_inner.append(np.interp(mean_fpr, fpr, tpr))
+                tprs_inner[-1][0] = 0.0
+                roc_auc_inner = auc(fpr, tpr)
+                aucs_inner.append(roc_auc_inner)
+
+            mean_tpr_inner = np.mean(tprs_inner, axis=0)
+            mean_tpr_inner[-1] = 1.0
+            mean_auc_inner = np.mean(aucs_inner)
+
+            tprs.append(mean_tpr_inner)
+            aucs.append(mean_auc_inner)
 
     mean_tpr = np.mean(tprs, axis=0)
     mean_tpr[-1] = 1.0
@@ -210,16 +217,7 @@ def train_and_evaluate_model(X, y, model):
     # plt.legend(loc='lower right')
 
 
-# モデルのリストを作成
-models = []
-for _ in range(400):
-    model = xgb.XGBClassifier(**best_params)
-    models.append(model)
-
-# 400のユニークなモデルに対してrNCVを実行
-for model in models:
-    train_and_evaluate_model(X_selected, y, model)
-
+train_and_evaluate_model(X_selected, y, model)
 plt.show()
 
 explainers = []
