@@ -73,7 +73,7 @@ df_concat = pd.concat([df_ple, df_non])
 # 2期で強迫症状ありに絞って、PLE出現を予測する
 print("2期に強迫症状あり\n", df_concat)
 print("3期・4期にPLEあり\n", df_concat["group"].sum())
-
+df_concat.to_csv("/Volumes/Pegasus32R8/TTC/2023retry/ocs2ple.csv")
 y = df_concat["group"]
 print(y)
 
@@ -89,14 +89,14 @@ outer_cv = StratifiedKFold(n_splits=4, shuffle=True, random_state=42)
 
 # ハイパーパラメータの探索空間
 param_grid = {
-    'n_estimators': list(range(101)),
-    'learning_rate': [0.1, 0.2, 0.3],
-    'max_depth': [1, 2],
+    'n_estimators': [67],  # list(range(101)),
+    'learning_rate': [0.3],  # [0.1, 0.2, 0.3],
+    'max_depth': [2],  # [1, 2],
     'random_state': [42],
     'n_jobs': [int(cpu_count() / 2)]
 }
-# best_score:  0.7798076923076923
-# best_params:  {'learning_rate': 0.2, 'max_depth': 1, 'n_estimators': 80, 'n_jobs': 18, 'random_state': 42}
+# best_score:  0.748878205128205
+# best_params:  {'learning_rate': 0.3, 'max_depth': 2, 'n_estimators': 67, 'n_jobs': 18, 'random_state': 42}
 
 # rNCVでのハイパーパラメータの探索
 best_score = 0
@@ -203,6 +203,8 @@ def train_and_evaluate_model(X, y, model):
     tprs_upper = np.minimum(mean_tpr + std_auc, 1)
     tprs_lower = mean_tpr - std_auc
     print("standard deviation: ", std_auc)
+    # mean_auc:  0.8153312353056427
+    # standard deviation:  0.03255968086085847
 
     # ROC曲線の描画
     plt.plot(mean_fpr, mean_tpr, color='b', label=f'Mean ROC (AUC = {mean_auc:.2f} $\pm$ {std_auc:.2f})')
@@ -237,4 +239,4 @@ for i in range(100):
 # SHAP値の平均化
 avg_shap_values = np.mean(shap_values_list, axis=0)
 # SHAPプロットの作成
-shap.summary_plot(avg_shap_values, X_selected)
+shap.summary_plot(avg_shap_values, X_selected, max_display=len(X_selected.columns))
