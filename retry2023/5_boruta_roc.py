@@ -6,7 +6,7 @@ import xgboost as xgb
 import shap
 from boruta import BorutaPy
 from sklearn.model_selection import StratifiedKFold, train_test_split
-from sklearn.metrics import accuracy_score, roc_auc_score, confusion_matrix, roc_curve, auc
+from sklearn.metrics import accuracy_score, roc_auc_score, confusion_matrix, roc_curve, auc,make_scorer
 from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
 
@@ -84,19 +84,30 @@ print("相関係数で変数選択する前", X.shape)
 print(X.head())
 # 参照 https://datadriven-rnd.com/2021-02-03-231858/
 
+def youden_index_score(y_true, y_pred):
+    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+    specificity = tn / (tn + fp)
+    sensitivity = tp / (tp + fn)
+    youden_index = sensitivity + specificity - 1
+    return youden_index
+
+
 # 外側ループのCVの分割設定
 outer_cv = StratifiedKFold(n_splits=4, shuffle=True, random_state=42)
 
 # ハイパーパラメータの探索空間
 param_grid = {
-    'n_estimators': [67],  # list(range(101)),
-    'learning_rate': [0.3],  # [0.1, 0.2, 0.3],
+    'n_estimators': [92],  # list(range(101)),
+    'learning_rate': [0.2],  # [0.1, 0.2, 0.3],
     'max_depth': [2],  # [1, 2],
     'random_state': [42],
     'n_jobs': [int(cpu_count() / 2)]
 }
-# best_score:  0.748878205128205
-# best_params:  {'learning_rate': 0.3, 'max_depth': 2, 'n_estimators': 67, 'n_jobs': 18, 'random_state': 42}
+# best_score:  0.28219696969696967
+# best_params:  {'learning_rate': 0.2, 'max_depth': 2, 'n_estimators': 92, 'n_jobs': 18, 'random_state': 42}
+
+# Youden Indexを最大化するためのスコア関数を作成
+scoring = make_scorer(youden_index_score, greater_is_better=True)
 
 # rNCVでのハイパーパラメータの探索
 best_score = 0
@@ -112,6 +123,7 @@ for train_index, val_index in outer_cv.split(X, y):
     grid_search = GridSearchCV(
         estimator=xgb.XGBClassifier(),
         param_grid=param_grid,
+        scoring=scoring,
         cv=inner_cv)
     grid_search.fit(X_train, y_train)
 
@@ -142,7 +154,7 @@ boruta_selector = BorutaPy(
     verbose=2,
     alpha=0.05,  # 有意水準
     max_iter=100,  # 試行回数
-    perc=90,  # perc,  # ランダム生成変数の重要度の何％を基準とするか
+    perc=95,  # perc,  # ランダム生成変数の重要度の何％を基準とするか
     two_step=False,  # two_stepがない方、つまりBonferroniを用いたほうがうまくいく
     random_state=0
 )
@@ -163,36 +175,31 @@ def train_and_evaluate_model(X, y, model):
 
     # ステップ3からステップ4までの手順を指定した回数（100回）繰り返す
     repeats = 100
+    roc_curves = []
 
     for _ in range(repeats):
+        tprs_outer = []
+        aucs_outer = []
+        # 各モデルのROC曲線を計算し、結果を保持するリスト
 
         for train_index, test_index in skf_outer.split(X, y):
             X_train, X_test = X.iloc[train_index], X.iloc[test_index]
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
-            skf_inner = StratifiedKFold(n_splits=4, shuffle=True)  # , random_state=42)
+            model.fit(X_train, y_train)
+            y_pred = model.predict_proba(X_test)[:, 1]
 
-            tprs_inner = []
-            aucs_inner = []
-            for train_inner_index, test_inner_index in skf_inner.split(X_train, y_train):
-                X_train_inner, X_test_inner = X_train.iloc[train_inner_index], X_train.iloc[test_inner_index]
-                y_train_inner, y_test_inner = y_train.iloc[train_inner_index], y_train.iloc[test_inner_index]
+            fpr, tpr, _ = roc_curve(y_test, y_pred)
+            # ROC曲線をリストに追加
+            roc_curves.append((fpr, tpr))
 
-                model.fit(X_train_inner, y_train_inner)
-                y_pred_inner = model.predict_proba(X_test_inner)[:, 1]
+            tprs.append(np.interp(mean_fpr, fpr, tpr))
+            tprs[-1][0] = 0.0
+            roc_auc = auc(fpr, tpr)
+            aucs.append(roc_auc)
 
-                fpr, tpr, _ = roc_curve(y_test_inner, y_pred_inner)
-                tprs_inner.append(np.interp(mean_fpr, fpr, tpr))
-                tprs_inner[-1][0] = 0.0
-                roc_auc_inner = auc(fpr, tpr)
-                aucs_inner.append(roc_auc_inner)
-
-            mean_tpr_inner = np.mean(tprs_inner, axis=0)
-            mean_tpr_inner[-1] = 1.0
-            mean_auc_inner = np.mean(aucs_inner)
-
-            tprs.append(mean_tpr_inner)
-            aucs.append(mean_auc_inner)
+        tprs.extend(tprs_outer)
+        aucs.extend(aucs_outer)
 
     mean_tpr = np.mean(tprs, axis=0)
     mean_tpr[-1] = 1.0
@@ -200,15 +207,20 @@ def train_and_evaluate_model(X, y, model):
     print("mean_auc: ", mean_auc)
 
     std_auc = np.std(aucs)
-    tprs_upper = np.minimum(mean_tpr + std_auc, 1)
-    tprs_lower = mean_tpr - std_auc
     print("standard deviation: ", std_auc)
-    # mean_auc:  0.8153312353056427
-    # standard deviation:  0.03255968086085847
+    # mean_auc:  0.8665940611664297
+    # standard deviation:  0.029762172277986467
+
+    # FPR の一意な値を取得
+    unique_fpr = np.unique(np.concatenate([fpr for fpr, _ in roc_curves]))
+    mean_tpr = np.mean([np.interp(unique_fpr, fpr, tpr) for fpr, tpr in roc_curves], axis=0)
+    std_tpr = np.std([np.interp(unique_fpr, fpr, tpr) for fpr, tpr in roc_curves], axis=0)
 
     # ROC曲線の描画
-    plt.plot(mean_fpr, mean_tpr, color='b', label=f'Mean ROC (AUC = {mean_auc:.2f} $\pm$ {std_auc:.2f})')
-    plt.fill_between(mean_fpr, tprs_lower, tprs_upper, color='gray', alpha=0.3, label='Standard deviation')
+    plt.plot(unique_fpr, mean_tpr, color='b', label=f'Mean ROC (AUC = {mean_auc:.2f} $\pm$ {std_auc:.2f})')
+    # plt.fill_between(mean_fpr, tprs_lower, tprs_upper, color='gray', alpha=0.3, label='Standard deviation')
+    plt.fill_between(unique_fpr, mean_tpr - std_tpr, mean_tpr + std_tpr, color='gray', alpha=0.2,
+                     label='Standard Deviation')
 
     plt.plot([0, 1], [0, 1], color='red', linestyle='--')
     plt.xlim([0, 1])
@@ -216,7 +228,7 @@ def train_and_evaluate_model(X, y, model):
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     plt.title('Receiver Operating Characteristic')
-    # plt.legend(loc='lower right')
+    plt.legend(loc='lower right')
 
 
 train_and_evaluate_model(X_selected, y, model)
