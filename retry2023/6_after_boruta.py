@@ -147,7 +147,7 @@ shap_values_list = []
 model = xgb.XGBClassifier(**best_params)
 
 for i in range(100):
-    # XGBoostモデルの訓練
+    # サンプル全体に対して、最終モデルのXGBoostモデルで訓練
     model.fit(X_selected, y)
 
     # SHAP値の計算

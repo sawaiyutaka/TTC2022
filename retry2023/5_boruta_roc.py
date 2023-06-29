@@ -6,7 +6,7 @@ import xgboost as xgb
 import shap
 from boruta import BorutaPy
 from sklearn.model_selection import StratifiedKFold, train_test_split
-from sklearn.metrics import accuracy_score, roc_auc_score, confusion_matrix, roc_curve, auc,make_scorer
+from sklearn.metrics import accuracy_score, roc_auc_score, confusion_matrix, roc_curve, auc, make_scorer
 from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
 
@@ -82,6 +82,8 @@ X = df_concat.drop(['OCS_0or1', 'group',
                     "DD64_1", "DD65_1", "DD66_1", "DD67_1", "DD68_1", "DD69_1", "DD70_1", "DD71_1", "DD72_1"], axis=1)
 print("相関係数で変数選択する前", X.shape)
 print(X.head())
+
+
 # 参照 https://datadriven-rnd.com/2021-02-03-231858/
 
 def youden_index_score(y_true, y_pred):
@@ -143,14 +145,12 @@ for _ in range(repeats):
             best_score = score
             best_params = params
 
-
 print("best_score: ", best_score)
 print("best_params: ", best_params)
 
 # 最終的な分類器の訓練
 model = xgb.XGBClassifier(**best_params)
 model.fit(X, y)
-
 
 # Borutaアルゴリズムによる特徴量選択
 boruta_selector = BorutaPy(
@@ -172,4 +172,3 @@ X_selected = X[selected_features]
 
 print('boruta後の変数の数:', X_selected.shape[1])
 print(X_selected.columns)
-
