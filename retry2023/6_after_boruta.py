@@ -16,8 +16,9 @@ print(df)
 y = df["group"]
 print(y)
 
-X_selected = df[["AA165", "AA123", "AD27_7", "AE1BMI", "AB62_7", "AA84", "AB149", "AC25", "AB116", "AA86",
-                 "AA101", "BR23UMU", "AB64", "AB70"]]  # borutaで選択した変数を
+X_selected = df[['A213SSQN_Imp', 'A213SSQS_Imp', 'AA101', 'AA123', 'AA165', 'AA192',
+                  'AA84', 'AA86', 'AB116', 'AB12.5', 'AB149', 'AB1STARTM', 'AB54', 'AB64',
+                  'AC17', 'AC25', 'AC73', 'AD27_7', 'BR23UMU', 'AE1BMI', 'bullied']]  # borutaで選択した変数を
 print("Xの項目数", X_selected.shape)
 print(X_selected.head())
 
@@ -37,14 +38,12 @@ outer_cv = StratifiedKFold(n_splits=4, shuffle=True, random_state=42)
 
 # ハイパーパラメータの探索空間
 param_grid = {
-    'n_estimators': list(range(101)),
+    'n_estimators': [10, 50, 100],  # list(range(101)),
     'learning_rate': [0.1, 0.2, 0.3],
     'max_depth': [1, 2],
     'random_state': [42],
     'n_jobs': [int(cpu_count() / 2)]
 }
-# best_score:  0.28219696969696967
-# best_params:  {'learning_rate': 0.2, 'max_depth': 2, 'n_estimators': 92, 'n_jobs': 18, 'random_state': 42}
 
 # Youden Indexを最大化するためのスコア関数を作成
 scoring = make_scorer(youden_index_score, greater_is_better=True)
@@ -60,7 +59,8 @@ best_params = {}
 # 100回繰り返す
 repeats = 100
 roc_curves = []
-
+explainers = []
+shap_values_list = []
 for _ in range(repeats):
     tprs_outer = []
     aucs_outer = []
@@ -94,7 +94,7 @@ for _ in range(repeats):
 
         # 最終的な分類器の訓練
         model = xgb.XGBClassifier(**params)
-        model.fit(X_selected, y)
+        model.fit(X_train, y_train)
 
         y_pred = model.predict_proba(X_test)[:, 1]
 
@@ -106,6 +106,12 @@ for _ in range(repeats):
         tprs[-1][0] = 0.0
         roc_auc = auc(fpr, tpr)
         aucs.append(roc_auc)
+
+        explainer = shap.TreeExplainer(model)
+        shap_values = explainer.shap_values(X_selected)
+
+        explainers.append(explainer)
+        shap_values_list.append(shap_values)
 
     tprs.extend(tprs_outer)
     aucs.extend(aucs_outer)
@@ -120,8 +126,10 @@ print("mean_auc: ", mean_auc)
 
 std_auc = np.std(aucs)
 print("standard deviation: ", std_auc)
-# mean_auc:  0.8665940611664297
-# standard deviation:  0.029762172277986467
+# best_score:  0.6222943722943723
+# best_params:  {'learning_rate': 0.2, 'max_depth': 2, 'n_estimators': 100, 'n_jobs': 18, 'random_state': 42}
+# mean_auc:  0.8880955725462303
+# standard deviation:  0.04290517810557535
 
 # FPR の一意な値を取得
 unique_fpr = np.unique(np.concatenate([fpr for fpr, _ in roc_curves]))
@@ -141,21 +149,6 @@ plt.ylabel('True Positive Rate')
 plt.title('Receiver Operating Characteristic')
 plt.legend(loc='lower right')
 plt.show()
-
-explainers = []
-shap_values_list = []
-model = xgb.XGBClassifier(**best_params)
-
-for i in range(100):
-    # サンプル全体に対して、最終モデルのXGBoostモデルで訓練
-    model.fit(X_selected, y)
-
-    # SHAP値の計算
-    explainer = shap.TreeExplainer(model)
-    shap_values = explainer.shap_values(X_selected)
-
-    explainers.append(explainer)
-    shap_values_list.append(shap_values)
 
 # SHAP値の平均化
 avg_shap_values = np.mean(shap_values_list, axis=0)
