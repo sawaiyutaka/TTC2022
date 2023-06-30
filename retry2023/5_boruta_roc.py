@@ -14,6 +14,17 @@ df = pd.read_table("/Volumes/Pegasus32R8/TTC/2023retry/df4grf_all_imputed.csv", 
 df = df.set_index("SAMPLENUMBER")
 print(df)
 
+# social cohesion
+df_social_cohesion = df[["AA57", "AA58", "AA59", "AA60", "AA61"]]
+print(df_social_cohesion)
+df["social_cohesion"] = df_social_cohesion.sum(axis=1)
+print("social cohesion sum\n", df["social_cohesion"])
+
+# atopy
+df["atopy"] = 1
+df["atopy"] = df["atopy"].where((df["AF37"] == 1) | (df["AF38"] == 1), 0)  # Falseのとき、NaNのかわりに値を代入
+print("atopy\n", df[["atopy", "AF37", "AF38"]])
+
 # 第２期のAQ素点からAQを計算
 # AQの合計点を作成
 df_AQ = df[["BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132"]]
@@ -42,15 +53,17 @@ df_SES = df_SES.replace({1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 1, 7: 1, 8: 1, 9: 1, 1
 print("SES 3カテゴリー", df_SES)
 df["SES"] = df_SES
 
-df = df.drop(["BB39", "BB83", 'OCS_sum',  # 第２期強迫
+df = df.drop({"BB39", "BB83", 'OCS_sum',  # 第２期強迫
               "AB195", "AB61", "AD19",  # 第１期SES、第１期いじめられ
               "AD57", "AD58", "AD59", "AD60", "AD61",  # 第１期PLE
               "BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132",  # AQ
-              ], axis=1)
+              "AA57", "AA58", "AA59", "AA60", "AA61",  # social cohesion
+              "AF37", "AF38",  # atopy
+              }, axis=1)
 
 df.to_csv("/Volumes/Pegasus32R8/TTC/2023retry/df4grf_xty.csv")
 
-df4boruta = df[df['OCS_0or1'] == 1]
+df4boruta = df[df['OCS_0or1'] == 1]  # ここをdfのみとすると、強迫の有無に関わらず解析する
 
 # 1つでも「2回以上あった」の項目がある人をPLEありとする
 df_ple = df4boruta[
@@ -80,7 +93,7 @@ print(y)
 X = df_concat.drop(['OCS_0or1', 'group',
                     "CD57_1", "CD58_1", "CD59_1", "CD60_1", "CD61_1", "CD62_1", "CD63_1", "CD64_1", "CD65_1",
                     "DD64_1", "DD65_1", "DD66_1", "DD67_1", "DD68_1", "DD69_1", "DD70_1", "DD71_1", "DD72_1"], axis=1)
-print("相関係数で変数選択する前", X.shape)
+print("人数とXの変数", X.shape)
 print(X.head())
 
 
@@ -99,14 +112,12 @@ outer_cv = StratifiedKFold(n_splits=4, shuffle=True, random_state=42)
 
 # ハイパーパラメータの探索空間
 param_grid = {
-    'n_estimators': [10, 50, 100],  # list(range(101)),
+    'n_estimators': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],  # list(range(101)),
     'learning_rate': [0.1, 0.2, 0.3],
     'max_depth': [1, 2],
     'random_state': [42],
     'n_jobs': [int(cpu_count() / 2)]
 }
-# best_score:  0.28219696969696967
-# best_params:  {'learning_rate': 0.2, 'max_depth': 2, 'n_estimators': 92, 'n_jobs': 18, 'random_state': 42}
 
 # Youden Indexを最大化するためのスコア関数を作成
 scoring = make_scorer(youden_index_score, greater_is_better=True)
