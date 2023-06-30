@@ -127,6 +127,7 @@ best_score = 0
 best_params = {}
 
 repeats = 100
+result_list = []
 for _ in range(repeats):
 
     for train_index, val_index in outer_cv.split(X, y):
@@ -151,35 +152,46 @@ for _ in range(repeats):
         print("score: ", score)
         print("params: ", params)
 
-        # 最も性能の良いモデルを保存
-        if score > best_score:
-            best_score = score
-            best_params = params
+        # データの二度漬けになるので特徴量選択する際にもtestを含めてはいけない
+        model = xgb.XGBClassifier(**params)
+        model.fit(X_train, y_train)
 
-print("best_score: ", best_score)
-print("best_params: ", best_params)
+        # Borutaアルゴリズムによる特徴量選択
+        boruta_selector = BorutaPy(
+            model,
+            n_estimators='auto',  # 特徴量の数に比例して、木の本数を増やす
+            verbose=2,
+            alpha=0.05,  # 有意水準
+            max_iter=100,  # 試行回数
+            perc=95,  # perc,  # ランダム生成変数の重要度の何％を基準とするか
+            two_step=False,  # two_stepがない方、つまりBonferroniを用いたほうがうまくいく
+            random_state=0
+        )
+        boruta_selector.fit(np.array(X_train), np.array(y_train))
 
-# 最終的な分類器の訓練
-model = xgb.XGBClassifier(**best_params)
-model.fit(X, y)
+        # 有効な特徴量の選択
+        selected_features = X.columns[boruta_selector.support_].tolist()
+        # 前回までに選ばれた要素のリストを取得
+        previous_items = result_list[-1] if result_list else []
 
-# Borutaアルゴリズムによる特徴量選択
-boruta_selector = BorutaPy(
-    model,
-    n_estimators='auto',  # 特徴量の数に比例して、木の本数を増やす
-    verbose=2,
-    alpha=0.05,  # 有意水準
-    max_iter=100,  # 試行回数
-    perc=95,  # perc,  # ランダム生成変数の重要度の何％を基準とするか
-    two_step=False,  # two_stepがない方、つまりBonferroniを用いたほうがうまくいく
-    random_state=0
-)
+        # 新しい行のデータを作成
+        new_row = [item if item in selected_features else "" for item in previous_items]
 
-boruta_selector.fit(np.array(X), np.array(y))
+        # 初めて選ばれた要素を新しい行に追加
+        for item in selected_features:
+            if item not in previous_items:
+                new_row.append(item)
 
-# 有効な特徴量の選択
-selected_features = X.columns[boruta_selector.support_].tolist()
-X_selected = X[selected_features]
+        # 新しい行を結果のリストに追加
+        result_list.append(new_row)
+        X_selected = X[selected_features]
 
-print('boruta後の変数の数:', X_selected.shape[1])
-print(X_selected.columns)
+        print('boruta後の変数の数:', X_selected.shape[1])
+        print(X_selected.columns)
+
+print(result_list)
+# 結果をDataFrameに変換
+result_df = pd.DataFrame(result_list)
+
+# 結果をCSVファイルとして保存
+result_df.to_csv('Volumes/Pegasus32R8/TTC/2023retry/X_selected.csv', index=False)
