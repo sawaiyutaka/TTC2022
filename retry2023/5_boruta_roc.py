@@ -194,4 +194,4 @@ print(result_list)
 result_df = pd.DataFrame(result_list)
 
 # 結果をCSVファイルとして保存
-result_df.to_csv('Volumes/Pegasus32R8/TTC/2023retry/X_selected.csv', index=False)
+result_df.to_csv('/Volumes/Pegasus32R8/TTC/2023retry/X_selected_list.csv')
