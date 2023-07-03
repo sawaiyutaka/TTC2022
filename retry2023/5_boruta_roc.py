@@ -195,3 +195,12 @@ result_df = pd.DataFrame(result_list)
 
 # 結果をCSVファイルとして保存
 result_df.to_csv('/Volumes/Pegasus32R8/TTC/2023retry/X_selected_list.csv')
+
+print(result_df.apply(pd.value_counts))
+
+result_df2 = result_df.apply(pd.value_counts)
+result_df3 = result_df2.sum(axis=1)
+print(result_df3)
+result_df4 = result_df3.sort_values(ascending=False)
+print(result_df4)
+result_df4.to_csv("/Volumes/Pegasus32R8/TTC/2023retry/count.csv")
