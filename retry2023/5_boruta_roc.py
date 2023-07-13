@@ -10,7 +10,7 @@ from sklearn.metrics import accuracy_score, roc_auc_score, confusion_matrix, roc
 from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
 
-df = pd.read_table("/Volumes/Pegasus32R8/TTC/2023retry/df4grf_all_imputed.csv", delimiter=",")
+df = pd.read_table("/Volumes/Pegasus32R8/TTC/2023retry/X_NAN_under_5percent_and_Y.csv", delimiter=",")
 df = df.set_index("SAMPLENUMBER")
 print(df)
 
@@ -46,31 +46,36 @@ df["bullied"] = 1
 df["bullied"] = df["bullied"].where((df["AB61"] < 5) | (df["AD19"] < 5), 0)
 # print(df[["bullied", "AB61", "AD19"]])
 
+"""
 # 収入を500万円未満、1000万円未満、1000万円以上、で3つに分け直す
 df_SES = df[["AB195"]]
 print("SES素点", df_SES)
 df_SES = df_SES.replace({1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 2})
 print("SES 3カテゴリー", df_SES)
 df["SES"] = df_SES
+"""
 
-df = df.drop({"BB39", "BB83", 'OCS_sum',  # 第２期強迫
-              "AB195", "AB61", "AD19",  # 第１期SES、第１期いじめられ
-              "AD57", "AD58", "AD59", "AD60", "AD61",  # 第１期PLE
-              "BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132",  # AQ
-              "AA57", "AA58", "AA59", "AA60", "AA61",  # social cohesion
-              "AF37", "AF38",  # atopy
-              }, axis=1)
+df = df.drop({
+    "AD57", "AD58", "AD59", "AD60", "AD61",  # 第１期PLE
+    "BB39", "BB83", 'OCS_sum',  # 第２期強迫
+    "AB61", "AD19",  # 第１期いじめられ
+    "BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132",  # AQ
+    "AA57", "AA58", "AA59", "AA60", "AA61",  # social cohesion
+    "AF37", "AF38",  # atopy
+}, axis=1)
 
-df.to_csv("/Volumes/Pegasus32R8/TTC/2023retry/df4grf_xty.csv")
+
+df.to_csv("/Volumes/Pegasus32R8/TTC/2023retry/df4boruta.csv")
 
 df4boruta = df[df['OCS_0or1'] == 1]  # ここをdfのみとすると、強迫の有無に関わらず解析する
+# df4boruta = df  # [df['OCS_0or1'] == 1]  # ここをdfのみとすると、強迫の有無に関わらず解析する
 
-# 1つでも「2回以上あった」の項目がある人をPLEありとする
+# 1つでも「1回のみあった」「2回以上あった」の項目がある人をPLEありとする
 df_ple = df4boruta[
     (df['CD57_1'] > 2) | (df['CD58_1'] > 2) | (df['CD59_1'] > 2) | (df['CD60_1'] > 2) | (df['CD61_1'] > 2) |
     (df['DD64_1'] > 2) | (df['DD65_1'] > 2) | (df['DD66_1'] > 2) | (df['DD67_1'] > 2) | (df['DD68_1'] > 2)
     ].copy()
-print("PLEあり\n", df_ple)
+print("PLEあり\n", df_ple)  # 273人
 df_ple["group"] = 1
 
 # 全ての項目に回答があって、「1回あった」までの人はPLEなしとする
@@ -85,9 +90,15 @@ df_concat = pd.concat([df_ple, df_non])
 
 # 2期で強迫症状ありに絞って、PLE出現を予測する
 print("2期に強迫症状あり\n", df_concat)
-print("3期・4期にPLEあり\n", df_concat["group"].sum())
-df_concat.to_csv("/Volumes/Pegasus32R8/TTC/2023retry/ocs2ple.csv")
-y = df_concat["group"]
+print("3期・4期にPLEあり\n", df_concat["group"].sum())  # ocsで絞らないと1444人
+
+# df_concat = df_concat[df_concat['group'] == 1]  # pleの有無で絞りたいとき
+df_concat.to_csv("/Volumes/Pegasus32R8/TTC/2023retry/ocs2ple_w_imp.csv")
+
+
+y = df_concat["group"]  # ocsありに絞って、pleを予測
+# ple出現に絞って、ocsの有無を予測する場合(pleあり273人中、ocsありは62人)
+# y = df_concat["OCS_0or1"]  # pleなしの人からocsを予測(1444人中)
 print(y)
 
 X = df_concat.drop(['OCS_0or1', 'group',
@@ -112,7 +123,7 @@ outer_cv = StratifiedKFold(n_splits=4, shuffle=True, random_state=42)
 
 # ハイパーパラメータの探索空間
 param_grid = {
-    'n_estimators': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],  # list(range(101)),
+    'n_estimators': [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],  # list(range(101)),
     'learning_rate': [0.1, 0.2, 0.3],
     'max_depth': [1, 2],
     'random_state': [42],
@@ -128,8 +139,8 @@ best_params = {}
 
 repeats = 100
 result_list = []
-for _ in range(repeats):
-
+for i in range(repeats):
+    print(i+1, "out of 100")
     for train_index, val_index in outer_cv.split(X, y):
         X_train, X_val = X.iloc[train_index], X.iloc[val_index]
         y_train, y_val = y.iloc[train_index], y.iloc[val_index]
@@ -194,7 +205,7 @@ print(result_list)
 result_df = pd.DataFrame(result_list)
 
 # 結果をCSVファイルとして保存
-result_df.to_csv('/Volumes/Pegasus32R8/TTC/2023retry/X_selected_list.csv')
+result_df.to_csv('/Volumes/Pegasus32R8/TTC/2023retry/ocs2ple_w_imp_X_selected_list.csv')
 
 print(result_df.apply(pd.value_counts))
 
@@ -203,4 +214,4 @@ result_df3 = result_df2.sum(axis=1)
 print(result_df3)
 result_df4 = result_df3.sort_values(ascending=False)
 print(result_df4)
-result_df4.to_csv("/Volumes/Pegasus32R8/TTC/2023retry/count.csv")
+result_df4.to_csv("/Volumes/Pegasus32R8/TTC/2023retry/ocs2ple_w_imp_count.csv")
