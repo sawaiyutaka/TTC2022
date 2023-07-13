@@ -1,6 +1,13 @@
+from multiprocessing import cpu_count
+
 import pandas as pd
 import seaborn as s
 from matplotlib import pyplot as plt
+from missingpy import MissForest
+import sys
+import sklearn.neighbors._base
+# sklearnのバージョンによって、.baseが_.base となったことによるエラーに対処
+sys.modules['sklearn.neighbors.base'] = sklearn.neighbors._base
 
 data4grf = pd.read_table("/Volumes/Pegasus32R8/TTC/2023retry/data4grf_before_impute.csv",
                          delimiter=",", low_memory=False)
@@ -57,10 +64,26 @@ s.set()
 s.displot(sr2)
 plt.show()
 
+# Make an instance and perform the imputation
+imputer = MissForest(criterion='squared_error', max_features=1.0, n_jobs=int(cpu_count() * 4 / 5))
+
+# https://pypi.org/project/missingpy/
+# 説明変数だけmissforestで補完
+df_imputed = imputer.fit_transform(df1)
+print("df_imputed\n", df_imputed)
+
+# 各列を整数に丸める（身長、体重も丸め）
+df_imputed = df_imputed.round().astype(int)
+
+# 第3, 第4期のPLE（欠損値あり）と統合
+df1[df1.columns.values] = df_imputed
+
+print("after missforest", df1)
+
 # アウトカムと結合
 df2 = pd.merge(df1, outcome, left_index=True, right_index=True)
 print("1期、2期のデータの内、NaNが5%未満の項目のみ抽出した\n", df2)
-df2.to_csv("/Volumes/Pegasus32R8/TTC/2023retry/columns_NAN_under_5percent.csv")
+df2.to_csv("/Volumes/Pegasus32R8/TTC/2023retry/X_NAN_under_5percent_and_Y.csv")
 
 
 
