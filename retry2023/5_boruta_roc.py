@@ -75,7 +75,8 @@ df_ple = df4boruta[
     (df['CD57_1'] > 2) | (df['CD58_1'] > 2) | (df['CD59_1'] > 2) | (df['CD60_1'] > 2) | (df['CD61_1'] > 2) |
     (df['DD64_1'] > 2) | (df['DD65_1'] > 2) | (df['DD66_1'] > 2) | (df['DD67_1'] > 2) | (df['DD68_1'] > 2)
     ].copy()
-print("PLEあり\n", df_ple)  # 273人
+print("PLEあり\n", df_ple)  # 第1期でPLEなしのうち、PLE出現は273人
+# 欠損値補完なしでOCSありに絞った後、PLE出現は45人
 df_ple["group"] = 1
 
 # 全ての項目に回答があって、「1回あった」までの人はPLEなしとする
@@ -85,6 +86,7 @@ df_non = df4boruta[
     ].copy()
 print("PLEなし\n", df_non)
 df_non["group"] = 0
+# 欠損値補完なしでOCSありに絞った後、PLE出現しないの99人
 
 df_concat = pd.concat([df_ple, df_non])
 
