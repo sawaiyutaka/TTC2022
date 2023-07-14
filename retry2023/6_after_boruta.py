@@ -1,3 +1,4 @@
+import glob
 from multiprocessing import cpu_count
 
 import pandas as pd
@@ -9,16 +10,50 @@ from sklearn.metrics import accuracy_score, roc_auc_score, confusion_matrix, roc
 from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
 
-df = pd.read_table("/Volumes/Pegasus32R8/TTC/2023retry/ocs2ple.csv", delimiter=",")
+df = pd.read_table("/Volumes/Pegasus32R8/TTC/2023retry/ocs2ple_w_imp.csv.csv", delimiter=",")
 df = df.set_index("SAMPLENUMBER")
 print(df)
 
-y = df["group"]
+# プログラム2｜所定フォルダ内の「data*.xlsx」を取得
+files = glob.glob('/Volumes/Pegasus32R8/TTC/2022base_OC_PLE/db*.xlsx')
+
+# プログラム3｜変数listを空リストで設定
+ls = []
+
+# プログラム4｜プログラム2で取得したエクセルを一つずつpandasデータとして取得
+for file in files:
+    d = pd.read_excel(file)
+    print(file)
+    d = d.set_index("SAMPLENUMBER")
+    # print(d)
+    ls.append(d)
+
+# プログラム5｜listに格納されたエクセルファイルをpandasとして結合
+oc_4th = pd.concat(ls, axis=1, join='inner')
+print(oc_4th)
+# 第4期のOCS
+# oc_4th = oc_4th[["DB57", "DB100"]]  # 第4期強迫観念、強迫行為
+df_ocs4th = df.join(oc_4th, how='inner')
+print(df_ocs4th)
+df_ocs4th.to_csv("/Volumes/Pegasus32R8/TTC/2023retry/ocs2ple_w_ocs4th.csv")
+
+y = df["OCS_0or1"]
 print(y)
 
-X_selected = df[['A213SSQN_Imp', 'A213SSQS_Imp', 'AA101', 'AA123', 'AA165', 'AA192',
-                  'AA84', 'AA86', 'AB116', 'AB12.5', 'AB149', 'AB1STARTM', 'AB54', 'AB64',
-                  'AC17', 'AC25', 'AC73', 'AD27_7', 'BR23UMU', 'AE1BMI', 'bullied']]  # borutaで選択した変数を
+X_selected = df[[
+"●●"
+]]
+
+# ocs2ple brutaで150回以上抽出
+# "AD27_7", "AA165", "AA101", "AA97", "AA84", "bullied", "AB12.5", "A213SSQS_Imp", "AB116", "AB46", "AB54",
+# "AB149", "AB64", "AE1BMI", "AB158"
+# ple borutaで100/400回以上抽出された変数を使う
+# "AA101", "AB126", "bullied", "AB127", "AA94", "AE13.8", "BR46UMU", "AB86", "AA219", "AB149", "AD27_4", "AA114",
+# "AEIQ", "AC42", "AD62", "AB114", "AB233.1", "AC66", "AB65_4"
+# ocsの予測で
+# "AB71", "AB102", "AA90", "AB154", "AB148", "AB96", "AQ_sum", "AB149", "AA100", "AB87",
+# "AA106", "AC45_1", "AC25", "AB147", "AD75", "AA85", "AB72", "AB128", "AB89", "AB143", "Webaddict4", "AA86"
+
 print("Xの項目数", X_selected.shape)
 print(X_selected.head())
 
@@ -38,7 +73,7 @@ outer_cv = StratifiedKFold(n_splits=4, shuffle=True, random_state=42)
 
 # ハイパーパラメータの探索空間
 param_grid = {
-    'n_estimators': [10, 50, 100],  # list(range(101)),
+    'n_estimators': [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],  # list(range(101)),
     'learning_rate': [0.1, 0.2, 0.3],
     'max_depth': [1, 2],
     'random_state': [42],
@@ -61,7 +96,8 @@ repeats = 100
 roc_curves = []
 explainers = []
 shap_values_list = []
-for _ in range(repeats):
+for i in range(repeats):
+    print(i+1, "out of 100")
     tprs_outer = []
     aucs_outer = []
     # 各モデルのROC曲線を計算し、結果を保持するリスト
