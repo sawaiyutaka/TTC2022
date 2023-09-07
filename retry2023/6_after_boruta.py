@@ -44,7 +44,7 @@ X_selected = df[[
     "bullied", "AD27_7", "AA97", "AD3", "AB46", "AB250", "AB64", "AB54", "AA86", "AB12.5", "AB72", "AB186Ln(TD)"
 ]]
 # 時間割引率はLnの値が小さいほど、割引率小さい（がまんできる）
-X_selected = X_selected.replace({"AD27_7": {1: 0, 2: 1}})
+X_selected = X_selected.replace({"AD27_7": {1: 0, 0: 1}})
 X_selected = X_selected.replace({"AD3": {1: 4, 2: 3, 3: 2, 4: 1}})
 X_selected = X_selected.replace({"AB46": {1: 4, 2: 3, 3: 2, 4: 1}})
 X_selected = X_selected.replace({"AB250": {1: 2, 2: 1}})
