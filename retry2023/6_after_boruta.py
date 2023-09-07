@@ -10,7 +10,7 @@ from sklearn.metrics import accuracy_score, roc_auc_score, confusion_matrix, roc
 from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
 
-df = pd.read_table("/Volumes/Pegasus32R8/TTC/2023retry/ocs2ple_w_imp.csv.csv", delimiter=",")
+df = pd.read_table("/Volumes/Pegasus32R8/TTC/2023retry/ocs2ple_w_imp.csv", delimiter=",")
 df = df.set_index("SAMPLENUMBER")
 print(df)
 
@@ -37,12 +37,19 @@ df_ocs4th = df.join(oc_4th, how='inner')
 print(df_ocs4th)
 df_ocs4th.to_csv("/Volumes/Pegasus32R8/TTC/2023retry/ocs2ple_w_ocs4th.csv")
 
-y = df["OCS_0or1"]
+y = df["group"]
 print(y)
 
 X_selected = df[[
-"●●"
+    "bullied", "AD27_7", "AA97", "AD3", "AB46", "AB250", "AB64", "AB54", "AA86", "AB12.5", "AB72", "AB186Ln(TD)"
 ]]
+# 時間割引率はLnの値が小さいほど、割引率小さい（がまんできる）
+X_selected = X_selected.replace({"AD27_7": {1: 0, 2: 1}})
+X_selected = X_selected.replace({"AD3": {1: 4, 2: 3, 3: 2, 4: 1}})
+X_selected = X_selected.replace({"AB46": {1: 4, 2: 3, 3: 2, 4: 1}})
+X_selected = X_selected.replace({"AB250": {1: 2, 2: 1}})
+X_selected = X_selected.replace({"AB64": {1: 5, 2: 4, 3: 3, 4: 2, 5: 1}})
+X_selected = X_selected.replace({"AB46": {1: 4, 2: 3, 3: 2, 4: 1}})
 
 # ocs2ple brutaで150回以上抽出
 # "AD27_7", "AA165", "AA101", "AA97", "AA84", "bullied", "AB12.5", "A213SSQS_Imp", "AB116", "AB46", "AB54",
@@ -53,6 +60,8 @@ X_selected = df[[
 # ocsの予測で
 # "AB71", "AB102", "AA90", "AB154", "AB148", "AB96", "AQ_sum", "AB149", "AA100", "AB87",
 # "AA106", "AC45_1", "AC25", "AB147", "AD75", "AA85", "AB72", "AB128", "AB89", "AB143", "Webaddict4", "AA86"
+# ocs2ple pleはimputationなしで、101回以上borutaで抽出された項目
+# "bullied", "AD27_7", "AA97", "AD3", "AB46", "AB250", "AB64", "AB54", "AA86", "AB12.5", "AB72", "AB186Ln(TD)"
 
 print("Xの項目数", X_selected.shape)
 print(X_selected.head())
@@ -97,7 +106,7 @@ roc_curves = []
 explainers = []
 shap_values_list = []
 for i in range(repeats):
-    print(i+1, "out of 100")
+    print(i + 1, "out of 100")
     tprs_outer = []
     aucs_outer = []
     # 各モデルのROC曲線を計算し、結果を保持するリスト
