@@ -49,7 +49,6 @@ X_selected = X_selected.replace({"AD3": {1: 4, 2: 3, 3: 2, 4: 1}})
 X_selected = X_selected.replace({"AB46": {1: 4, 2: 3, 3: 2, 4: 1}})
 X_selected = X_selected.replace({"AB250": {1: 2, 2: 1}})
 X_selected = X_selected.replace({"AB64": {1: 5, 2: 4, 3: 3, 4: 2, 5: 1}})
-X_selected = X_selected.replace({"AB46": {1: 4, 2: 3, 3: 2, 4: 1}})
 
 # ocs2ple brutaで150回以上抽出
 # "AD27_7", "AA165", "AA101", "AA97", "AA84", "bullied", "AB12.5", "A213SSQS_Imp", "AB116", "AB46", "AB54",
