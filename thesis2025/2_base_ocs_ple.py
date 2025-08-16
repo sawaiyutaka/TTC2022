@@ -27,7 +27,8 @@ df_1 = pd.read_table("/Volumes/Pegasus32R8/TTC/2025thesis/TTC2022_1st_all.csv",
                      delimiter=",", low_memory=False)
 df_1 = df_1.set_index("SAMPLENUMBER")
 df_1 = df_1[["AD19", "AB61", "AB195", "AB114", "AB71", "AB186Ln(TD)", "AC81Ln(TD)",
-             "AB12.5", "AA97", "AA86", "AB46", "AD27_7", "AB54", "AB72", "AB250", "AD3", "AB64"]]
+             "AB12.5", "AB12.1", "AB12.2", "AB12.3", "AB12.4",
+             "AA97", "AA86", "AB46", "AD27_7", "AB54", "AB72", "AB250", "AD3", "AB64"]]
 
 
 
@@ -92,7 +93,7 @@ df_tab1 = df_tab1.drop({
     "BB123", "BB124", "BB125", "BB126", "BB127", "BB128", "BB129", "BB130", "BB131", "BB132",  # AQ
 }, axis=1)
 print("Table 1用\n", df_tab1)
-df_tab1.to_csv("/Volumes/Pegasus32R8/TTC/2025thesis/table1.csv")
+df_tab1.to_csv("/Volumes/Pegasus32R8/TTC/2025thesis/before_imp4tables.csv")
 
 
 # 第3期PLEのデータフレーム
