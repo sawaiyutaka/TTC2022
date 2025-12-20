@@ -207,7 +207,7 @@ print(result_list)
 result_df = pd.DataFrame(result_list)
 
 # 結果をCSVファイルとして保存
-result_df.to_csv('/Volumes/Pegasus32R8/TTC/2025thesis/ocs2ple_w_imp_X_selected_list.csv')
+result_df.to_csv('/Volumes/Pegasus32R8/TTC/2025thesis/X_selected_list.csv')
 
 print(result_df.apply(pd.value_counts))
 
@@ -216,4 +216,4 @@ result_df3 = result_df2.sum(axis=1)
 print(result_df3)
 result_df4 = result_df3.sort_values(ascending=False)
 print(result_df4)
-result_df4.to_csv("/Volumes/Pegasus32R8/TTC/2025thesis/ocs2ple_w_imp_count.csv")
+result_df4.to_csv("/Volumes/Pegasus32R8/TTC/2025thesis/count.csv")
