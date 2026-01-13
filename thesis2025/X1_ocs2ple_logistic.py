@@ -17,7 +17,7 @@ def calc_or_woolf(a, b, c, d):
 # 1) 読込
 # =========================================================
 data4grf = pd.read_table(
-    "/Volumes/Pegasus32R8/TTC/2025thesis/before_impute.csv",
+    r"D:\documents\UT\thesis\before_impute.csv",
     delimiter=",", low_memory=False
 ).set_index("SAMPLENUMBER")
 
@@ -76,8 +76,8 @@ or_, lcl, ucl = calc_or_woolf(a, b, c, d)
 print(f"\n粗OR = {or_:.3f} (95%CI {lcl:.3f} - {ucl:.3f})")
 
 # 保存（supp用）
-tab.to_csv("/Volumes/Pegasus32R8/TTC/2025thesis/OCS12_vs_PE1416_2x2.csv")
-df_or.to_csv("/Volumes/Pegasus32R8/TTC/2025thesis/OCS12_vs_PE1416_analysis_dataset.csv")
+# tab.to_csv("/Volumes/Pegasus32R8/TTC/2025thesis/OCS12_vs_PE1416_2x2.csv")
+# df_or.to_csv("/Volumes/Pegasus32R8/TTC/2025thesis/OCS12_vs_PE1416_analysis_dataset.csv")
 
 import statsmodels.api as sm
 

@@ -6,17 +6,18 @@ from scipy import stats
 # =============================
 # 設定：ファイルパス
 # =============================
-DATA_PATH = "/Volumes/Pegasus32R8/TTC/2025thesis/before_impute.csv"
+DATA_PATH = r"D:\documents\UT\thesis\before_impute.csv"
 
 # 出力先（適宜変更）
-OUT_DESC = "/Volumes/Pegasus32R8/TTC/2025thesis/supp_PE_desc_12vars.csv"
-OUT_OR   = "/Volumes/Pegasus32R8/TTC/2025thesis/supp_PE_univ_logit_12vars.csv"
+OUT_DESC = r"C:\Users\sawai\PycharmProjects\ocs_ple\thesis2025\supp_PE_desc_12vars.csv"
+OUT_OR   = r"C:\Users\sawai\PycharmProjects\ocs_ple\thesis2025\supp_PE_univ_logit_12vars.csv"
 
 # =============================
 # 解析対象の12変数
 # =============================
 vars12 = ["bullied", "AD27_7", "AA97", "AD3", "AB46", "AB250",
-          "AB64", "AB54", "AA86", "AB12.5", "AB72", "AB186Ln(TD)"]
+          "AB64", "AB54", "AA86", "AB12.5", "AB72", "AB186Ln(TD)",
+          "AEIQ"]
 
 # =============================
 # 1) データ読み込み
@@ -41,6 +42,57 @@ df0["PE_14_16"] = np.select([ple_condition, non_condition], [1, 0], default=np.n
 
 # PEが0/1に確定した人だけ
 df = df0[df0["PE_14_16"].isin([0, 1])].copy()
+
+# ★追加：OCS_0or1==1 の人だけ
+if "OCS_0or1" not in df.columns:
+    raise ValueError("OCS_0or1 列が見つかりません。列名を確認してください。")
+df = df[df["OCS_0or1"] == 1].copy()
+
+# =============================
+# ★追加：AB12.5 を 3群（1, 2-4, 5）に再符号化
+#   - 1 を reference
+#   - 2,3,4 をまとめて "2-4"
+#   - 5 は "5"
+# =============================
+if "AB12.5" in df.columns:
+    ab = pd.to_numeric(df["AB12.5"], errors="coerce")
+
+    df["AB12.5_grp"] = np.nan
+    df.loc[ab == 1, "AB12.5_grp"] = 1
+    df.loc[ab.isin([2, 3, 4]), "AB12.5_grp"] = 2   # 2-4 をまとめる（内部コード2）
+    df.loc[ab == 5, "AB12.5_grp"] = 5
+
+    # 元の AB12.5 をこの新変数に置き換える（以降の処理がそのまま動くように）
+    df.drop(columns=["AB12.5"], inplace=True)
+    df.rename(columns={"AB12.5_grp": "AB12.5"}, inplace=True)
+
+# =============================
+# ★追加：AB64 を再符号化
+#   - 5 を reference
+#   - 3,4 をまとめる
+# =============================
+if "AB64" in df.columns:
+    ab = pd.to_numeric(df["AB64"], errors="coerce")
+
+    df["AB64_grp"] = np.nan
+    df.loc[ab == 5, "AB64_grp"] = 5          # reference
+    df.loc[ab.isin([3, 4]), "AB64_grp"] = 34 # 3-4 合算（内部コード34）
+
+    # それ以外の選択肢（例：1,2）があればそのまま残す
+    df.loc[ab.isin([1, 2]), "AB64_grp"] = ab[ab.isin([1, 2])]
+
+    # 元の AB64 を置き換え
+    df.drop(columns=["AB64"], inplace=True)
+    df.rename(columns={"AB64_grp": "AB64"}, inplace=True)
+
+# =============================
+# ★追加：AD27_7 の 0/1 を反転
+#   0 → 1
+#   1 → 0
+# =============================
+if "AD27_7" in df.columns:
+    df["AD27_7"] = pd.to_numeric(df["AD27_7"], errors="coerce")
+    df.loc[df["AD27_7"].isin([0, 1]), "AD27_7"] = 1 - df.loc[df["AD27_7"].isin([0, 1]), "AD27_7"]
 
 # =============================
 # 3) bullied等があなたの前処理で作られる場合の補助
@@ -165,10 +217,25 @@ print("記述統計を保存:", OUT_DESC)
 or_rows = []
 
 def fit_logit(y, X):
+    # yを数値化（object混入対策）
+    y = pd.to_numeric(y, errors="coerce").astype(float)
+
+    # Xを数値化（ダミー列のobject混入対策）
+    X = X.copy()
     X = sm.add_constant(X, has_constant="add")
-    model = sm.Logit(y, X)
+
+    # 重要：全列を数値(float)へ
+    X = X.apply(pd.to_numeric, errors="coerce").astype(float)
+
+    # 念のため：欠損を落としてインデックス整合
+    dat = pd.concat([y, X], axis=1).dropna()
+    y2 = dat.iloc[:, 0]
+    X2 = dat.iloc[:, 1:]
+
+    model = sm.Logit(y2, X2)
     res = model.fit(disp=0)
     return res
+
 
 y_all = df["PE_14_16"].astype(float)
 
@@ -233,8 +300,20 @@ for v in vars12:
     else:
         # categorical：参照カテゴリ（最頻値）をbaselineにしてダミー化
         x = dat[v].astype("category")
-        # 最頻値を参照にしたいのでカテゴリ順を調整
-        ref = x.value_counts().idxmax()
+        # 水準を数値変換（できないものはNaN）
+        levels = pd.Index(x.cat.categories)
+        levels_num = pd.to_numeric(levels.astype(str), errors="coerce")
+
+        # ★AB64 は reference=5 を強制（存在する場合）
+        if v == "AB64" and (5 in pd.to_numeric(levels.astype(str), errors="coerce").values):
+            ref = 5
+        else:
+            if np.isfinite(levels_num).any():
+                ref = levels[levels_num.argmin()]
+            else:
+                ref = sorted(levels.astype(str))[0]
+
+        # refを先頭に並べ替え（baselineにするため）
         x = x.cat.reorder_categories(
             [ref] + [c for c in x.cat.categories if c != ref],
             ordered=True
